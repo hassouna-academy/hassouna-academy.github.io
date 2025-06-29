@@ -194,6 +194,10 @@ iframe {
     width: 200px;
 }
 
+.w220px{
+    width: 220px;
+}
+
 .btn:hover {
     color: #fff;
     background-color: #014691;
