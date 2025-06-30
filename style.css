@@ -348,6 +348,11 @@ input[type=text]:focus , input[type=password]:focus , textarea:focus{
     display:block;
 }
 
+.my-p .txtVid{
+    display: inline-block;
+    margin-bottom: 3px;
+}
+
 a .my-p{
     width: 350px !important;
 }
@@ -599,6 +604,7 @@ footer {
         width: 80% !important;
         font-size: 13px;
         display: inline-block;
+        min-height: 100px;
     }
 
     a .my-p{
@@ -608,6 +614,11 @@ footer {
     .my-p img{
         width: 90px !important;
         height: 50px !important;
+    }
+
+    .my-p .txtVid{
+        display: inline-block;
+        min-height: 40px;
     }
 
     #all-lang{
