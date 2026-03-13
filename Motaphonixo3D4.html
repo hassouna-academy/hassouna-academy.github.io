@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Motaphonixo 3D</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;
+  font-family:'Courier New',Courier,monospace;user-select:none;-webkit-user-select:none;
+  background:#ffffff;}
+#gc{display:block;position:fixed;top:0;left:0;width:100%;height:100%;}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;pointer-events:none;}
+#stats{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 10px;
+  background:rgba(255,255,255,0.96);
+  backdrop-filter:blur(10px);
+  border-bottom:2px solid rgba(97,90,130,0.2);
+  box-shadow:0 2px 12px rgba(66,60,80,0.08);
+  transition:border-color .4s;
+  gap:4px;
+}
+/* الخط يتكيف مع عرض الشاشة: كبير على الكمبيوتر، مقروء على الهاتف */
+.sblk{display:flex;flex-direction:column;align-items:center;gap:1px;
+  font-size:clamp(14px,3.2vw,26px);}
+.slbl{color:#000;letter-spacing:.06em;font-size:.62em;text-transform:uppercase;font-weight:700;
+  white-space:nowrap;}
+.sval{color:#421788;font-weight:bold;letter-spacing:.04em;line-height:1.1;}
+.sval.gold{color:#8a6a28;}
+.sval.red{color:#aa3322;}
+.sval.red2{color:#d62003;}
+.sval.grn{color:#3a7a4a;}
+
+/* حياة — تحكم في الفيض على الهاتف */
+#dLives{flex-wrap:wrap;max-width:90px;justify-content:center;}
+
+#pbar-wrap{width:100%;height:6px;background:#fff;position:relative;border-bottom:1px solid rgba(88,80,110,0.1);}
+#pbar{height:100%;width:0%;background:#735a9a;box-shadow:0 0 6px rgba(71,70,150,0.35);transition:width .1s;}
+#ptarget{position:absolute;top:0;height:100%;width:2px;background:#c08030;box-shadow:0 0 4px rgba(50,20,160,0.4);}
+.li-dot{width:clamp(6px,1.4vw,10px);height:clamp(6px,1.4vw,10px);border-radius:50%;
+  background:#3d0f86;box-shadow:0 0 4px rgba(32,52,145,0.3);}
+.li-dot.dead{background:#fff;box-shadow:none;}
+
+/* هاتف صغير جداً: مخفف أكثر */
+@media(max-width:400px){
+  #stats{padding:5px 6px;gap:2px;}
+  .sblk{font-size:12px;}
+  #dLives{max-width:60px;}
+}
+
+/* Powerup status bar */
+#pw-bar{
+  display:none;justify-content:center;gap:10px;align-items:center;
+  padding:2px 10px;background:rgba(20,10,40,0.82);
+  font-size:clamp(9px,2.2vw,12px);pointer-events:none;
+  border-bottom:1px solid rgba(120,100,200,0.25);
+}
+.pw-tag{
+  display:none;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:10px;
+  font-weight:bold;letter-spacing:.04em;font-size:.9em;
+}
+.pw-tag.speed{background:rgba(0,255,136,0.18);color:#00ff88;border:1px solid rgba(0,255,136,0.5);}
+.pw-tag.slow{background:rgba(170,68,255,0.18);color:#cc88ff;border:1px solid rgba(170,68,255,0.5);}
+.pw-bar-label{color:#aaa;font-size:.8em;}
+
+/* OVERLAY */
+#overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.90);backdrop-filter:blur(8px);padding:10px;}
+#overlay.hidden{display:none;}
+.screen{
+  color:#2b2a4a;text-align:center;
+  padding:clamp(14px,4vw,28px) clamp(16px,5vw,36px);
+  max-width:420px;width:96%;
+  border:2px solid rgb(30,13,105);
+  box-shadow:0 8px 40px rgba(82,43,82,0.14),0 1px 0 rgba(255,255,255,.8) inset;
+  background:rgba(255,255,255,0.97);border-radius:6px;position:relative;overflow:hidden;
+}
+.screen::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg,rgba(100,90,160,0.05) 0%,transparent 55%);}
+.screen h1{font-size:clamp(1.2em,5vw,2.2em);letter-spacing:.14em;color:#2f2a5a;
+  text-shadow:0 2px 6px rgba(56,40,100,0.1);margin-bottom:4px;}
+.screen .sub{font-size:clamp(.62em,.7em,.75em);color:#241264;letter-spacing:.1em;margin-bottom:14px;}
+.screen p{font-size:clamp(.72em,.8em,.85em);color:#3c114d;margin:4px 0;line-height:1.7;}
+.sbig{font-size:clamp(1.1em,4vw,1.5em);margin:10px 0;letter-spacing:.06em;}
+.sbig.gd{color:#0a0944;} .sbig.rd{color:#64160b;} .sbig.gr{color:#563a7a;}
+.btn{
+  display:inline-block;margin:8px 3px 0;
+  padding:clamp(7px,2vw,10px) clamp(14px,4vw,28px);
+  background:#232258;border:none;color:#f0ede8;
+  font:bold clamp(.78em,.95em,1em) 'Courier New',monospace;
+  letter-spacing:.1em;cursor:pointer;
+  text-transform:uppercase;transition:all .18s;pointer-events:all;border-radius:4px;
+  box-shadow:0 3px 12px rgba(50,56,110,0.25);
+}
+.btn:hover{background:#433a7a;box-shadow:0 5px 18px rgba(66,50,110,0.35);transform:translateY(-1px);}
+.btn.rd{background:#aa3322;box-shadow:0 3px 12px rgba(140,40,30,.25);}
+.btn.rd:hover{background:#992211;}
+.btn.gd{background:#083364;box-shadow:0 3px 12px rgba(120,90,30,.25);}
+.btn.gd:hover{background:#6e187a;}
+.btn.sm{font-size:.78em;padding:6px 14px;}
+.key{display:inline-block;padding:2px 6px;border:1px solid #b0b2c8;color:#423fc7;
+  margin:1px;border-radius:3px;background:#e7e6f0;font-size:.9em;}
+.key-row{margin:8px 0;font-size:clamp(.64em,.76em,.8em);}
+
+/* Player name input */
+#nameWrap{margin:12px 0 4px;pointer-events:all;}
+#playerNameInput{
+  width:78%;padding:8px 14px;
+  border:2px solid #a0a0d8;border-radius:4px;
+  font-family:'Courier New',monospace;font-size:.92em;
+  text-align:center;background:#f4f4fb;color:#2b2a4a;
+  outline:none;transition:border-color .2s;pointer-events:all;
+}
+#playerNameInput:focus{border-color:#6060cc;background:#fff;}
+
+/* Leaderboard */
+#leaderList{max-height:260px;overflow-y:auto;margin:10px 0;text-align:right;}
+.leader-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;margin:3px 0;
+  background:#f4f4fb;border-radius:4px;
+  border-right:3px solid #6060cc;
+  font-size:.82em;
+}
+.leader-rank{font-size:1.1em;min-width:26px;text-align:center;}
+.leader-name{flex:1;color:#2b2a4a;font-weight:bold;}
+.leader-score{color:#421788;font-weight:bold;min-width:65px;text-align:center;}
+.leader-lvl{color:#666;font-size:.82em;min-width:28px;text-align:center;}
+.leader-date{color:#aaa;font-size:.74em;min-width:58px;text-align:center;}
+.no-scores{color:#888;font-size:.85em;padding:20px;text-align:center;}
+
+/* Powerup legend in leaderboard */
+.pw-legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0;font-size:.75em;}
+.pw-leg{padding:3px 10px;border-radius:10px;font-weight:bold;}
+
+/* Level badge flash */
+#level-badge{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:45;pointer-events:none;
+  opacity:0;transition:opacity .4s;
+  display:flex;align-items:center;justify-content:center;
+}
+.badge-inner{
+  padding:18px 42px;border-radius:14px;
+  background:rgba(10,8,30,0.82);backdrop-filter:blur(10px);
+  text-align:center;border:2px solid currentColor;
+}
+.badge-num{font-size:1.6em;font-weight:bold;letter-spacing:.2em;margin-bottom:2px;}
+.badge-sym{font-size:2.8em;line-height:1.1;}
+
+/* Toast */
+#toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(0px);
+  z-index:65;pointer-events:none;
+  font-size:1.05em;font-weight:bold;letter-spacing:.08em;
+  padding:8px 24px;border-radius:22px;
+  background:rgba(10,6,30,0.88);color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .3s,transform .3s;
+  font-family:'Courier New',monospace;white-space:nowrap;
+}
+
+/* DPAD */
+#dpad{display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);width:148px;height:148px;z-index:30;}
+.db{position:absolute;width:46px;height:46px;background:rgba(42,6,126,0.1);
+  border:2px solid rgba(84,70,110,0.28);color:#544a7a;font-size:1.3em;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:6px;touch-action:none;}
+.db:active,.db.pr{background:rgba(73,70,110,0.22);}
+#dU{top:0;left:51px;}#dD{bottom:0;left:51px;}#dL{left:0;top:51px;}#dR{right:0;top:51px;}
+#dC{left:51px;top:51px;background:rgba(255,255,255,0.85);border-color:#b4b0c8;
+  font-size:.85em;color:#443a7a;pointer-events:all;}
+@media(max-width:750px){#dpad{display:block;}}
+@media(pointer:coarse){#dpad{display:block;}}
+
+/* ══ MINIMAP — هاتف فقط ══ */
+#mm-wrap{
+  display:none;
+  position:fixed;top:56px;right:6px;
+  z-index:25;pointer-events:none;
+}
+#mm{
+  display:block;border-radius:5px;
+  border:1.5px solid rgba(255,255,255,0.4);
+  box-shadow:0 2px 10px rgba(0,0,0,.55);
+  opacity:.9;
+}
+#mm-lbl{
+  text-align:center;font-size:8px;
+  color:rgba(255,255,255,.7);
+  font-family:'Courier New',monospace;
+  letter-spacing:.05em;margin-top:1px;
+  text-shadow:0 1px 3px #000;
+}
+
+/* ══ RADAR ARROWS — سهام الأعداء خارج الرؤية ══ */
+.ra{
+  position:fixed;z-index:24;pointer-events:none;
+  width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;line-height:1;
+  filter:drop-shadow(0 0 5px currentColor);
+  transition:opacity .15s;
+}
+
+@media(max-width:750px){#mm-wrap{display:block;}}
+@media(pointer:coarse){#mm-wrap{display:block;}}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+
+<!-- ══ HUD ══ -->
+<div id="hud">
+  <div id="stats">
+    <div class="sblk">
+      <div class="slbl">مستوى</div>
+      <div class="sval red2" id="dLvl" style="font-weight:bold;transition:color .3s;">1</div>
+    </div>
+    <div class="sblk">
+      <div class="slbl">محاولات</div>
+      <div id="dLives" style="display:flex;gap:5px;margin-top:2px;"></div>
+    </div>
+    <div class="sblk">
+      <div class="slbl">نسبة الفوز</div>
+      <div class="sval grn" id="dPct">0% / 75%</div>
+    </div>
+    <div class="sblk">
+      <div class="slbl">نقاط</div>
+      <div class="sval" id="dScore">0</div>
+    </div>
+    <div class="sblk">
+      <div class="slbl">أعلى نقاط</div>
+      <div class="sval gold" id="dHigh">0</div>
+    </div>
+  </div>
+  <div id="pbar-wrap"><div id="pbar"></div><div id="ptarget"></div></div>
+  <div id="pw-bar">
+    <span class="pw-bar-label">مؤثرات:</span>
+    <span class="pw-tag speed" id="pwSpeed">⚡ سرعة <span id="pwSpeedT">5ث</span></span>
+    <span class="pw-tag slow" id="pwSlow">❄️ تبطيء <span id="pwSlowT">5ث</span></span>
+  </div>
+</div>
+
+<!-- ══ OVERLAY ══ -->
+<div id="overlay">
+
+  <!-- قائمة البداية -->
+  <div id="sMenu" class="screen">
+    <h1 style="font-size: 30px !important;">Motaphonixo 3D</h1>
+    <div style="display: flex !important; align-items: center !important; margin-bottom: 7px;">
+        <a id="gotoHA" target="_blank" href="https://www.youtube.com/@HassounaAcademy" style=" margin: 0 auto;display: flex; align-items: center; gap: 2px; text-decoration: none; color:#0b2ab3;">
+          <span id="textHA" style="vertical-align: middle; font-size: 25px; font-weight: bold;">حسونة أكاديمي</span>
+          <svg version="1.1" id="logo" width="50" height="50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 26.1" style="enable-background:new 0 0 27 26.1;" xml:space="preserve"><style type="text/css">.st0{fill:#0b2ab3;}</style><g id="logo_x5F_group"><g id="shape"><path id="path1" class="st0" d="M13.5,1.6c-6.1,0-11.1,5-11.1,11.1s5,11.1,11.1,11.1s11.1-5,11.1-11.1S19.7,1.6,13.5,1.6z M13.5,23.3C7.7,23.3,3,18.6,3,12.8S7.7,2.2,13.5,2.2s10.6,4.7,10.6,10.6S19.4,23.3,13.5,23.3z"/><path id="path2" class="st0" d="M8.8,19.2c-1.9-1.5-3-3.8-3-6.4c0-2.7,1.3-5,3.3-6.5c0.2-0.2,0.3-0.4,0.3-0.7c0-0.2,0-0.3-0.1-0.5C9.2,4.6,8.6,4.4,8.1,4.7c-2.7,1.6-4.5,4.7-4.5,8.2c0,3.5,1.8,6.5,4.4,8.2c0.5,0.3,1.4-0.1,1.4-1C9.4,19.8,9,19.3,8.8,19.2z"/><path id="path3" class="st0" d="M14.3,4.3c0,0.5,0.4,0.8,0.9,0.9c2.8,0.2,6.5,4.6,6.1,7.8c-0.4,2.7-1.1,4.3-3.3,6.4c-0.2,0.2-0.3,0.5-0.3,0.8c0,0,0,0,0,0c0.1,0.7,0.9,1.1,1.5,0.7c2.5-1.6,4.2-4.6,4.2-8c0-3.8-2-8.6-7.9-9.8C14.8,3,14.2,3.6,14.3,4.3C14.3,4.3,14.3,4.3,14.3,4.3z"/><path id="path4" class="st0" d="M15.9,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V4c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.2C16.4,21.4,16.2,21.6,15.9,21.6z"/><path id="path5" class="st0" d="M12.8,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V3.6c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.5C13.3,21.4,13.1,21.6,12.8,21.6z"/><path id="path6" class="st0" d="M12.8,11.8V13c0,0.3-0.2,0.5-0.5,0.5H5.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h7.2C12.6,11.3,12.8,11.5,12.8,11.8z"/><path id="path7" class="st0" d="M21.9,11.8V13c0,0.3-0.2,0.5-0.5,0.5h-6.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h6.2C21.7,11.3,21.9,11.5,21.9,11.8z"/></g></g></svg>
+        </a>
+    </div>
+    <div class="sub">هل تستطيع إنهاء الـ 40 مستوى 🏆🦹🏅 - لو فزت بهم أخبرنا في حسونة أكاديمي 👆 وشارك تحديك 💪</div>
+    <p>تحرك خارج المنطقة الآمنة لرسم مسار<br>وعد إليها لاحتلال المساحة</p>
+    <div class="key-row">
+      <span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span> تحرك
+      &nbsp;&nbsp;<span class="key">P</span> إيقاف
+    </div>
+    <p style="color:#722106;font-size:.74em;">⚠ احذر! الكرات تدمر مسارك قبل العودة!</p>
+    <div class="pw-legend">
+      <span class="pw-leg" style="background:rgba(0,170,255,.15);color:#0af;border:1px solid #0af;">💙 محاولة</span>
+      <span class="pw-leg" style="background:rgba(255,200,0,.15);color:#fc0;border:1px solid #fa0;">⭐ بونص</span>
+      <span class="pw-leg" style="background:rgba(0,255,136,.15);color:#0f8;border:1px solid #0f8;">⚡ سرعة</span>
+      <span class="pw-leg" style="background:rgba(170,68,255,.15);color:#c8f;border:1px solid #a4f;">❄️ تبطيء</span>
+    </div>
+    <div id="nameWrap">
+      <input type="text" id="playerNameInput" placeholder="✏️ اكتب اسمك هنا" maxlength="18">
+    </div>
+    <button class="btn" id="btnStart">▶ ابدأ اللعبة</button>
+    <button class="btn gd sm" id="btnLeader">🏆 لوحة الشرف</button>
+  </div>
+
+  <!-- توقف مؤقت -->
+  <div id="sPause" class="screen" style="display:none;">
+    <h1 style="font-size:1.8em;">⏸ متوقف</h1>
+    <div style="display: flex !important; align-items: center !important; margin-bottom: 7px;">
+      <a id="gotoHA" target="_blank" href="https://www.youtube.com/@HassounaAcademy" style=" margin: 0 auto;display: flex; align-items: center; gap: 2px; text-decoration: none; color:#0b2ab3;">
+        <span id="textHA" style="vertical-align: middle; font-size: 25px; font-weight: bold;">حسونة أكاديمي</span>
+        <svg version="1.1" id="logo" width="50" height="50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 26.1" style="enable-background:new 0 0 27 26.1;" xml:space="preserve"><style type="text/css">.st0{fill:#0b2ab3;}</style><g id="logo_x5F_group"><g id="shape"><path id="path1" class="st0" d="M13.5,1.6c-6.1,0-11.1,5-11.1,11.1s5,11.1,11.1,11.1s11.1-5,11.1-11.1S19.7,1.6,13.5,1.6z M13.5,23.3C7.7,23.3,3,18.6,3,12.8S7.7,2.2,13.5,2.2s10.6,4.7,10.6,10.6S19.4,23.3,13.5,23.3z"/><path id="path2" class="st0" d="M8.8,19.2c-1.9-1.5-3-3.8-3-6.4c0-2.7,1.3-5,3.3-6.5c0.2-0.2,0.3-0.4,0.3-0.7c0-0.2,0-0.3-0.1-0.5C9.2,4.6,8.6,4.4,8.1,4.7c-2.7,1.6-4.5,4.7-4.5,8.2c0,3.5,1.8,6.5,4.4,8.2c0.5,0.3,1.4-0.1,1.4-1C9.4,19.8,9,19.3,8.8,19.2z"/><path id="path3" class="st0" d="M14.3,4.3c0,0.5,0.4,0.8,0.9,0.9c2.8,0.2,6.5,4.6,6.1,7.8c-0.4,2.7-1.1,4.3-3.3,6.4c-0.2,0.2-0.3,0.5-0.3,0.8c0,0,0,0,0,0c0.1,0.7,0.9,1.1,1.5,0.7c2.5-1.6,4.2-4.6,4.2-8c0-3.8-2-8.6-7.9-9.8C14.8,3,14.2,3.6,14.3,4.3C14.3,4.3,14.3,4.3,14.3,4.3z"/><path id="path4" class="st0" d="M15.9,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V4c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.2C16.4,21.4,16.2,21.6,15.9,21.6z"/><path id="path5" class="st0" d="M12.8,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V3.6c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.5C13.3,21.4,13.1,21.6,12.8,21.6z"/><path id="path6" class="st0" d="M12.8,11.8V13c0,0.3-0.2,0.5-0.5,0.5H5.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h7.2C12.6,11.3,12.8,11.5,12.8,11.8z"/><path id="path7" class="st0" d="M21.9,11.8V13c0,0.3-0.2,0.5-0.5,0.5h-6.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h6.2C21.7,11.3,21.9,11.5,21.9,11.8z"/></g></g></svg>
+      </a>
+    </div>
+    <div class="sub">هل تستطيع إنهاء الـ 40 مستوى 🏆🦹🏅 - لو فزت بهم أخبرنا في حسونة أكاديمي 👆 وشارك تحديك 💪</div>
+    <p>اللعبة في وضع الإيقاف المؤقت</p>
+    <button class="btn" id="btnResume">▶ استمرار</button>
+  </div>
+
+  <!-- مستوى مكتمل -->
+  <div id="sLvl" class="screen" style="display:none;">
+    <h1 style="font-size:1.6em;" id="lvlTitle">✦ مستوى مكتمل!</h1>
+    <div style="display: flex !important; align-items: center !important; margin-bottom: 7px;">
+      <a id="gotoHA" target="_blank" href="https://www.youtube.com/@HassounaAcademy" style=" margin: 0 auto;display: flex; align-items: center; gap: 2px; text-decoration: none; color:#0b2ab3;">
+        <span id="textHA" style="vertical-align: middle; font-size: 25px; font-weight: bold;">حسونة أكاديمي</span>
+        <svg version="1.1" id="logo" width="50" height="50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 26.1" style="enable-background:new 0 0 27 26.1;" xml:space="preserve"><style type="text/css">.st0{fill:#0b2ab3;}</style><g id="logo_x5F_group"><g id="shape"><path id="path1" class="st0" d="M13.5,1.6c-6.1,0-11.1,5-11.1,11.1s5,11.1,11.1,11.1s11.1-5,11.1-11.1S19.7,1.6,13.5,1.6z M13.5,23.3C7.7,23.3,3,18.6,3,12.8S7.7,2.2,13.5,2.2s10.6,4.7,10.6,10.6S19.4,23.3,13.5,23.3z"/><path id="path2" class="st0" d="M8.8,19.2c-1.9-1.5-3-3.8-3-6.4c0-2.7,1.3-5,3.3-6.5c0.2-0.2,0.3-0.4,0.3-0.7c0-0.2,0-0.3-0.1-0.5C9.2,4.6,8.6,4.4,8.1,4.7c-2.7,1.6-4.5,4.7-4.5,8.2c0,3.5,1.8,6.5,4.4,8.2c0.5,0.3,1.4-0.1,1.4-1C9.4,19.8,9,19.3,8.8,19.2z"/><path id="path3" class="st0" d="M14.3,4.3c0,0.5,0.4,0.8,0.9,0.9c2.8,0.2,6.5,4.6,6.1,7.8c-0.4,2.7-1.1,4.3-3.3,6.4c-0.2,0.2-0.3,0.5-0.3,0.8c0,0,0,0,0,0c0.1,0.7,0.9,1.1,1.5,0.7c2.5-1.6,4.2-4.6,4.2-8c0-3.8-2-8.6-7.9-9.8C14.8,3,14.2,3.6,14.3,4.3C14.3,4.3,14.3,4.3,14.3,4.3z"/><path id="path4" class="st0" d="M15.9,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V4c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.2C16.4,21.4,16.2,21.6,15.9,21.6z"/><path id="path5" class="st0" d="M12.8,21.6h-1.2c-0.3,0-0.5-0.2-0.5-0.5V3.6c0-0.3,0.2-0.5,0.5-0.5h1.2c0.3,0,0.5,0.2,0.5,0.5v17.5C13.3,21.4,13.1,21.6,12.8,21.6z"/><path id="path6" class="st0" d="M12.8,11.8V13c0,0.3-0.2,0.5-0.5,0.5H5.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h7.2C12.6,11.3,12.8,11.5,12.8,11.8z"/><path id="path7" class="st0" d="M21.9,11.8V13c0,0.3-0.2,0.5-0.5,0.5h-6.2c-0.3,0-0.5-0.2-0.5-0.5v-1.2c0-0.3,0.2-0.5,0.5-0.5h6.2C21.7,11.3,21.9,11.5,21.9,11.8z"/></g></g></svg>
+      </a>
+    </div>
+    <div class="sbig gr" id="lvlScore"></div>
+    <div id="lvlMsg" style="font-size:.78em;color:#1a0341;margin:4px 0;"></div>
+    <div class="sub">هل تستطيع إنهاء الـ 40 مستوى 🏆🦹🏅 - لو فزت بهم أخبرنا في حسونة أكاديمي 👆 وشارك تحديك 💪</div>
+    <button class="btn gd" id="btnNext">المستوى التالي ▶</button>
+  </div>
+
+  <!-- انتهت اللعبة -->
+  <div id="sOver" class="screen" style="display:none;">
+    <h1 style="font-size:1.8em;color:#aa3322;">✕ انتهت اللعبة</h1>
+    <div class="sbig rd" id="overScore"></div>
+    <div id="overHigh" style="font-size:.78em;color:#8d889a;margin:4px 0;"></div>
+    <button class="btn rd" id="btnRestart">↺ العب مجددًا</button>
+    <button class="btn sm" id="btnOverLeader">🏆 لوحة الشرف</button>
+  </div>
+
+  <!-- فوز كبير -->
+  <div id="sWin" class="screen" style="display:none;max-width:460px;">
+    <div style="font-size:2.8em;margin-bottom:4px;line-height:1.1;">🏆</div>
+    <h1 style="font-size:1.5em;color:#750a75;letter-spacing:.14em;">أنجزت اللعبة كاملةً!</h1>
+    <div style="font-size:2em;margin:8px 0;">🎉 🎊 🥳</div>
+    <div class="sbig gd" id="winScore"></div>
+    <div id="winPlayerNameDiv" style="color:#2a7a9a;font-size:1.05em;margin:6px 0;font-weight:bold;"></div>
+    <p style="color:#3a8a5a;font-size:.82em;">أنهيت جميع المستويات الـ <strong>٤٠</strong> بنجاح!</p>
+    <p style="color:#888;font-size:.74em;">✓ تم حفظ نتيجتك في لوحة الشرف</p>
+    <button class="btn gd" id="btnWinRestart">▶ من البداية</button>
+    <button class="btn sm" id="btnWinLeader">🏆 لوحة الشرف</button>
+  </div>
+
+  <!-- لوحة الشرف -->
+  <div id="sLeader" class="screen" style="display:none;max-width:480px;">
+    <h1 style="font-size:1.35em;letter-spacing:.14em;">🏆 لوحة الشرف</h1>
+    <p style="font-size:.74em;color:#666;margin-bottom:2px;">أفضل ١٠ نتائج محفوظة على هذا الجهاز</p>
+    <div id="leaderList"></div>
+    <button class="btn" id="btnLeaderBack">↩ عودة</button>
+    <button class="btn rd sm" id="btnClearScores">🗑 مسح الكل</button>
+  </div>
+
+</div>
+
+<!-- ══ DPAD ══ -->
+<div id="dpad">
+  <div class="db" id="dU" data-k="ArrowUp">▲</div>
+  <div class="db" id="dD" data-k="ArrowDown">▼</div>
+  <div class="db" id="dL" data-k="ArrowLeft">◀</div>
+  <div class="db" id="dR" data-k="ArrowRight">▶</div>
+  <div class="db" id="dC">⏸</div>
+</div>
+
+<!-- ══ MINIMAP ══ -->
+<div id="mm-wrap">
+  <canvas id="mm" width="110" height="74"></canvas>
+  <div id="mm-lbl">الخريطة</div>
+</div>
+<!-- ══ RADAR ══ -->
+<div id="radar"></div>
+
+<!-- Level badge flash -->
+<div id="level-badge">
+  <div class="badge-inner">
+    <div class="badge-num" id="badgeNum"></div>
+    <div class="badge-sym" id="badgeSym"></div>
+  </div>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS  (منطق أصلي 100%)
+// ═══════════════════════════════════════════
+const CELL=10,COLS=60,ROWS=40,EMPTY=0,FILL=1,PATH=2;
+const LEVELS=[
+  {enemies:1,eSpd:1.0,pSpd:3,target:75,hunters:0}, //Level 01
+  {enemies:1,eSpd:1.4,pSpd:3,target:75,hunters:1}, //Level 02
+  {enemies:2,eSpd:1.4,pSpd:3,target:75,hunters:0}, //Level 03
+  {enemies:3,eSpd:1.4,pSpd:3,target:75,hunters:0}, //Level 04
+  {enemies:2,eSpd:1.4,pSpd:3,target:75,hunters:1}, //Level 05
+  {enemies:2,eSpd:1.4,pSpd:3,target:75,hunters:2}, //Level 06
+  {enemies:3,eSpd:1.6,pSpd:3,target:75,hunters:0}, //Level 07
+  {enemies:3,eSpd:1.6,pSpd:3,target:75,hunters:1}, //Level 08
+  {enemies:3,eSpd:1.8,pSpd:3,target:78,hunters:1}, //Level 09
+  {enemies:4,eSpd:1.8,pSpd:2,target:78,hunters:1}, //Level 10
+  {enemies:4,eSpd:2.0,pSpd:2,target:80,hunters:2}, //Level 11
+  {enemies:5,eSpd:2.0,pSpd:2,target:80,hunters:2}, //Level 12
+  {enemies:5,eSpd:2.2,pSpd:2,target:80,hunters:2}, //Level 13
+  {enemies:6,eSpd:2.2,pSpd:2,target:82,hunters:3}, //Level 14
+  {enemies:6,eSpd:2.4,pSpd:2,target:85,hunters:3}, //Level 15
+  {enemies:7,eSpd:2.5,pSpd:3,target:87,hunters:3}, //Level 16
+  {enemies:6,eSpd:2.4,pSpd:2,target:85,hunters:4}, //Level 17
+  {enemies:7,eSpd:2.5,pSpd:3,target:86,hunters:2}, //Level 18
+  {enemies:5,eSpd:2.4,pSpd:3,target:85,hunters:5}, //Level 19
+  {enemies:9,eSpd:2.3,pSpd:2,target:80,hunters:2}, //Level 20
+  {enemies:9,eSpd:2.4,pSpd:2,target:82,hunters:1}, //Level 21
+  {enemies:8,eSpd:2.2,pSpd:2,target:80,hunters:2}, //Level 22
+  {enemies:8,eSpd:2.5,pSpd:3,target:83,hunters:3}, //Level 23
+  {enemies:9,eSpd:3.0,pSpd:3,target:80,hunters:4}, //Level 24
+  {enemies:9,eSpd:3.5,pSpd:4,target:75,hunters:5}, //Level 25
+  // ══ المرحلة الثانية — تحديات متصاعدة ══
+  {enemies:10,eSpd:2.8,pSpd:3,target:78,hunters:3}, //Level 26 — عودة الزخم بعدد أكبر
+  {enemies:8, eSpd:3.2,pSpd:2,target:80,hunters:6}, //Level 27 — صائدون أكثر
+  {enemies:10,eSpd:3.0,pSpd:3,target:82,hunters:4}, //Level 28 — سرعة متوازنة
+  {enemies:7, eSpd:3.8,pSpd:3,target:80,hunters:4}, //Level 29 — سريع جداً
+  {enemies:11,eSpd:2.8,pSpd:2,target:78,hunters:3}, //Level 30 — الحشود
+  {enemies:9, eSpd:3.5,pSpd:3,target:83,hunters:5}, //Level 31 — هدف أعلى
+  {enemies:10,eSpd:3.2,pSpd:2,target:82,hunters:6}, //Level 32 — صائدون ثقال
+  {enemies:12,eSpd:2.6,pSpd:3,target:80,hunters:4}, //Level 33 — الازدحام
+  {enemies:8, eSpd:4.0,pSpd:3,target:78,hunters:3}, //Level 34 — اختبار السرعة
+  {enemies:11,eSpd:3.4,pSpd:2,target:85,hunters:4}, //Level 35 — نصف الطريق للنهاية
+  {enemies:10,eSpd:3.8,pSpd:3,target:83,hunters:5}, //Level 36 — قبل الجحيم
+  {enemies:12,eSpd:3.2,pSpd:2,target:85,hunters:6}, //Level 37 — صائدون في كل مكان
+  {enemies:11,eSpd:4.0,pSpd:3,target:87,hunters:5}, //Level 38 — اختبار النهاية
+  {enemies:13,eSpd:3.5,pSpd:2,target:85,hunters:6}, //Level 39 — ما قبل الأخير
+  {enemies:12,eSpd:4.2,pSpd:3,target:80,hunters:7}, //Level 40 — المواجهة الأخيرة
+];
+const MAX_LVL=LEVELS.length;
+const CX=COLS/2-.5, CZ=ROWS/2-.5;
+
+// ═══════════════════════════════════════════
+//  LEVEL THEMES — علامة مميزة لكل مستوى
+// ═══════════════════════════════════════════
+const LEVEL_THEMES=[
+  {css:'#e63946',bg:0x7abbcf,sym:'Ⅰ',name:'الفجر'},
+  {css:'#f4a261',bg:0x78b0a5,sym:'Ⅱ',name:'الرياح'},
+  {css:'#e9c46a',bg:0x88bfc5,sym:'Ⅲ',name:'الموج'},
+  {css:'#2a9d8f',bg:0x7898c8,sym:'Ⅳ',name:'الصخر'},
+  {css:'#264653',bg:0x88a8c8,sym:'Ⅴ',name:'الغيم'},
+  {css:'#8338ec',bg:0xa090c8,sym:'Ⅵ',name:'الليل'},
+  {css:'#ff006e',bg:0xb882a5,sym:'Ⅶ',name:'النار'},
+  {css:'#fb5607',bg:0xc07880,sym:'Ⅷ',name:'المغامرة'},
+  {css:'#e9c46a',bg:0x9898b0,sym:'Ⅸ',name:'الغموض'},
+  {css:'#3a86ff',bg:0x7888c5,sym:'Ⅹ',name:'السماء'},
+  {css:'#06d6a0',bg:0x70aaa8,sym:'XI',name:'الأمواج'},
+  {css:'#ef476f',bg:0xb078a0,sym:'XII',name:'العاصفة'},
+  {css:'#ffd166',bg:0xa8a070,sym:'XIII',name:'الذهب'},
+  {css:'#118ab2',bg:0x7090b5,sym:'XIV',name:'العمق'},
+  {css:'#073b4c',bg:0x6888a0,sym:'XV',name:'الكهف'},
+  {css:'#7400b8',bg:0xa088c8,sym:'XVI',name:'السحر'},
+  {css:'#6930c3',bg:0x9880c0,sym:'XVII',name:'الظلام'},
+  {css:'#5e60ce',bg:0x8080c8,sym:'XVIII',name:'الكون'},
+  {css:'#4ea8de',bg:0x7888b8,sym:'XIX',name:'الجليد'},
+  {css:'#48cae4',bg:0x78a8b8,sym:'XX',name:'البرق'},
+  {css:'#0077b6',bg:0x6880b0,sym:'XXI',name:'الطوفان'},
+  {css:'#00b4d8',bg:0x78a8c0,sym:'XXII',name:'النهاية القريبة'},
+  {css:'#90e0ef',bg:0x88b0b8,sym:'XXIII',name:'الصمود'},
+  {css:'#caf0f8',bg:0x90b8c0,sym:'XXIV',name:'قبل القمة'},
+  {css:'#ffdd00',bg:0xa8a060,sym:'XXV',name:'الذروة'},
+  // مراحل 26-40
+  {css:'#ff6b35',bg:0xb09060,sym:'XXVI',name:'العودة'},
+  {css:'#c9184a',bg:0xb07888,sym:'XXVII',name:'الصائدون'},
+  {css:'#ff4d6d',bg:0xb88090,sym:'XXVIII',name:'الاندفاع'},
+  {css:'#c77dff',bg:0x9880c8,sym:'XXIX',name:'الانفجار'},
+  {css:'#e63946',bg:0xa87070,sym:'XXX',name:'الحشود'},
+  {css:'#f72585',bg:0xb878a0,sym:'XXXI',name:'اللهب'},
+  {css:'#7209b7',bg:0x9878c0,sym:'XXXII',name:'الكثافة'},
+  {css:'#3a0ca3',bg:0x8070c0,sym:'XXXIII',name:'الازدحام'},
+  {css:'#ff0000',bg:0xb06060,sym:'XXXIV',name:'الاختبار'},
+  {css:'#dc2f02',bg:0xb06858,sym:'XXXV',name:'المنتصف'},
+  {css:'#e85d04',bg:0xb07858,sym:'XXXVI',name:'الحافة'},
+  {css:'#9b2226',bg:0xa06060,sym:'XXXVII',name:'المسدس'},
+  {css:'#ae2012',bg:0xb06858,sym:'XXXVIII',name:'الاختبار الأخير'},
+  {css:'#bb3e03',bg:0xb87060,sym:'XXXIX',name:'قبل المواجهة'},
+  {css:'#ffba08',bg:0xa89050,sym:'XL',name:'المواجهة الأخيرة'},
+];
+
+// ═══════════════════════════════════════════
+//  POWERUP CONFIG
+// ═══════════════════════════════════════════
+const SLOW_FACTOR       = 0.32;
+const POWERUP_DURATION  = 300; // frames ≈ 5 sec
+const POWERUP_SPAWN_T   = 500; // frames ≈ 8 sec between spawns
+const POWERUP_LIFETIME  = 650; // frames ≈ 11 sec on field
+
+// ═══════════════════════════════════════════
+//  THREE.JS SETUP
+// ═══════════════════════════════════════════
+const canvas=document.getElementById('gc');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.4;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x8dbbbf);
+scene.fog=new THREE.Fog(0x89cbcc,55,130);
+
+const camera=new THREE.PerspectiveCamera(52,window.innerWidth/window.innerHeight,0.1,400);
+
+// ── كشف الهاتف ──
+function isMobile(){return window.innerWidth<750||navigator.maxTouchPoints>0;}
+
+// هدف الكاميرا الناعم (يُستخدم للـ lerp)
+const camTarget={x:CX,y:36,z:ROWS+14};
+const camLook={x:CX,y:0,z:CZ-2};
+
+function setCameraDefault(){
+  if(!isMobile()){
+    // كمبيوتر: عرض كامل الملعب
+    camera.position.set(CX,36,ROWS+14);
+    camera.lookAt(CX,0,CZ-2);
+  }
+  // الهاتف: يتحرك مع اللاعب (يُحسب في updateCameraFollow)
+}
+
+// تحديث الكاميرا على الهاتف — تتبع ناعم (lerp)
+function updateCameraFollow(){
+  if(!isMobile())return;
+  const px=P&&!P.dying?P.col:CX;
+  const pz=P&&!P.dying?P.row:CZ;
+  // هدف الكاميرا: فوق اللاعب وخلفه قليلاً
+  const tx=px, ty=22, tz=pz+14;
+  const lx=px, ly=0,  lz=pz-1;
+  const sp=0.12; // سرعة التتبع
+  camTarget.x+=(tx-camTarget.x)*sp;
+  camTarget.y+=(ty-camTarget.y)*sp;
+  camTarget.z+=(tz-camTarget.z)*sp;
+  camLook.x+=(lx-camLook.x)*sp;
+  camLook.z+=(lz-camLook.z)*sp;
+  camera.position.set(camTarget.x,camTarget.y,camTarget.z);
+  camera.lookAt(camLook.x,camLook.y,camLook.z);
+}
+
+setCameraDefault();
+window.addEventListener('resize',()=>{
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// إضاءة
+const sun=new THREE.DirectionalLight(0xfff0d8,1.9);
+sun.position.set(-20,45,30);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-65;sun.shadow.camera.right=75;
+sun.shadow.camera.top=55;sun.shadow.camera.bottom=-15;
+sun.shadow.camera.near=1;sun.shadow.camera.far=180;
+sun.shadow.bias=-0.001;scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xd8d0c8,0xe8e0d0,1.2));
+const fill=new THREE.DirectionalLight(0xe8e4dc,0.5);
+fill.position.set(40,20,-10);scene.add(fill);
+scene.add(new THREE.AmbientLight(0xf0ece6,0.5));
+
+const playerLight=new THREE.PointLight(0x70c0a0,4.5,18);scene.add(playerLight);
+const enemyLights=[];
+for(let i=0;i<10;i++){const pl=new THREE.PointLight(0xc04030,2.5,10);pl.visible=false;scene.add(pl);enemyLights.push(pl);}
+
+// ── Instanced Tiles ──
+const dummy=new THREE.Object3D();
+const fillGeo=new THREE.BoxGeometry(0.92,0.38,0.92);
+const fillMat=new THREE.MeshStandardMaterial({
+  color:0x0d5c03,roughness:0.35,metalness:0.05,
+  emissive:new THREE.Color(0x2a5a48),emissiveIntensity:0.12
+});
+const fillMesh=new THREE.InstancedMesh(fillGeo,fillMat,COLS*ROWS);
+fillMesh.frustumCulled=false;fillMesh.castShadow=true;fillMesh.receiveShadow=true;scene.add(fillMesh);
+
+const pathGeo=new THREE.BoxGeometry(0.86,0.28,0.86);
+const pathMat=new THREE.MeshStandardMaterial({
+  color:0xbb2040,roughness:0.3,metalness:0.02,
+  emissive:new THREE.Color(0xa05820),emissiveIntensity:0.28
+});
+const pathMesh=new THREE.InstancedMesh(pathGeo,pathMat,COLS*ROWS);
+pathMesh.frustumCulled=false;pathMesh.castShadow=true;scene.add(pathMesh);
+const tileY=new Float32Array(ROWS*COLS).fill(-1);
+
+// أرضية
+const floorMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(COLS+10,ROWS+10),
+  new THREE.MeshStandardMaterial({color:0xd4c9b0,roughness:0.7,metalness:0.0})
+);
+floorMesh.rotation.x=-Math.PI/2;floorMesh.position.set(CX,-0.19,CZ);
+floorMesh.receiveShadow=true;scene.add(floorMesh);
+
+const gridHelper=new THREE.GridHelper(COLS,COLS,0xc0b8a8,0xccc4b4);
+gridHelper.material.opacity=0.45;gridHelper.material.transparent=true;
+gridHelper.position.set(CX,-0.18,CZ);scene.add(gridHelper);
+
+function makeWall(w,h,d,x,y,z,col){
+  const m=new THREE.MeshStandardMaterial({color:col,roughness:0.3,metalness:0.05,transparent:true,opacity:0.6});
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+  mesh.position.set(x,y,z);mesh.castShadow=true;scene.add(mesh);
+}
+makeWall(COLS+2,1.4,0.5, CX,0.5,-0.25,    0x5a8870);
+makeWall(COLS+2,1.4,0.5, CX,0.5,ROWS-.25, 0x5a8870);
+makeWall(0.5,1.4,ROWS+2, -.25,0.5,CZ,     0x4a7860);
+makeWall(0.5,1.4,ROWS+2, COLS-.25,0.5,CZ, 0x4a7860);
+
+// ── اللاعب — حجم كبير واضح ──
+const plGeo=new THREE.OctahedronGeometry(1.05,0);
+const plMat=new THREE.MeshStandardMaterial({
+  color:0x3a7a90,roughness:0.1,metalness:0.3,
+  emissive:new THREE.Color(0x1a5060),emissiveIntensity:0.4
+});
+const playerMesh=new THREE.Mesh(plGeo,plMat);playerMesh.castShadow=true;scene.add(playerMesh);
+const plRing=new THREE.Mesh(
+  new THREE.TorusGeometry(1.38,0.10,8,36),
+  new THREE.MeshBasicMaterial({color:0x5aacb0,transparent:true,opacity:0.55})
+);
+plRing.rotation.x=Math.PI/2;playerMesh.add(plRing);
+
+// ── الأعداء — حجم أكبر ──
+const ECOLS3D=[0xa70404,0x6c4500,0xce0576,0xff0404,0xff3904,0x8c0c03,0x6d032b,0x791603];
+const enemyGroup=new THREE.Group();scene.add(enemyGroup);
+let enemyObjs=[];
+
+function buildEnemyMesh(isHunter,colIdx){
+  const col=ECOLS3D[colIdx%ECOLS3D.length];
+  // كرة أكبر
+  const sphere=new THREE.Mesh(
+    new THREE.SphereGeometry(0.66,20,14),
+    new THREE.MeshStandardMaterial({
+      color:col,roughness:0.18,metalness:0.15,
+      emissive:new THREE.Color(col),emissiveIntensity:0.22
+    })
+  );sphere.castShadow=true;
+  const glint=new THREE.Mesh(new THREE.SphereGeometry(0.21,8,6),
+    new THREE.MeshStandardMaterial({color:0xfff8f0,roughness:0.0,emissive:new THREE.Color(0xffffff),emissiveIntensity:0.5}));
+  glint.position.set(-0.16,0.18,0.30);sphere.add(glint);
+  const sdisk=new THREE.Mesh(new THREE.CircleGeometry(0.62,16),
+    new THREE.MeshBasicMaterial({color:0x503020,transparent:true,opacity:0.12,depthWrite:false}));
+  sdisk.rotation.x=-Math.PI/2;sdisk.position.y=-0.64;sphere.add(sdisk);
+  let ring=null;
+  if(isHunter){
+    ring=new THREE.Mesh(new THREE.TorusGeometry(0.98,0.08,8,32),
+      new THREE.MeshStandardMaterial({color:0xc89040,roughness:0.12,metalness:0.5,
+        emissive:new THREE.Color(0x209894),emissiveIntensity:0.35}));
+    ring.castShadow=true;sphere.add(ring);
+  }
+  const trails=[];
+  for(let t=0;t<6;t++){
+    const ts=new THREE.Mesh(new THREE.SphereGeometry(0.44*(1-t/7),6,4),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.0}));
+    scene.add(ts);trails.push(ts);
+  }
+  enemyGroup.add(sphere);
+  return{sphere,ring,trails,isHunter,col:new THREE.Color(col),pulseT:Math.random()*Math.PI*2};
+}
+
+// ── جسيمات 3D ──
+const MAX_PARTS=600;
+const pPos=new Float32Array(MAX_PARTS*3),pCol=new Float32Array(MAX_PARTS*3);
+const pGeo=new THREE.BufferGeometry();
+pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
+const pMat=new THREE.PointsMaterial({size:0.26,vertexColors:true,transparent:true,opacity:0.85,
+  blending:THREE.NormalBlending,depthWrite:false,sizeAttenuation:true});
+scene.add(new THREE.Points(pGeo,pMat));
+let parts=[];
+
+function burst3D(wx,wy,wz,n,colHex){
+  const c=new THREE.Color(colHex);
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,p=Math.acos(Math.random()*2-1),s=Math.random()*2+0.4;
+    parts.push({x:wx,y:wy,z:wz,
+      vx:Math.sin(p)*Math.cos(a)*s,vy:Math.random()*1.8+0.4,vz:Math.sin(p)*Math.sin(a)*s,
+      life:1,decay:.018+Math.random()*.025,r:c.r,g:c.g,b:c.b});
+  }
+}
+function updateParts(){
+  parts=parts.filter(p=>p.life>0);
+  if(parts.length>MAX_PARTS)parts=parts.slice(-MAX_PARTS);
+  parts.forEach(p=>{p.x+=p.vx*.06;p.y+=p.vy*.06;p.z+=p.vz*.06;
+    p.vx*=.93;p.vy*=.9;p.vz*=.93;p.vy-=.025;p.life-=p.decay;});
+  const n=parts.length;
+  for(let i=0;i<n;i++){
+    const p=parts[i],a=Math.max(0,p.life);
+    pPos[i*3]=p.x;pPos[i*3+1]=p.y;pPos[i*3+2]=p.z;
+    pCol[i*3]=p.r*a;pCol[i*3+1]=p.g*a;pCol[i*3+2]=p.b*a;
+  }
+  for(let i=n;i<MAX_PARTS;i++)pPos[i*3]=pPos[i*3+1]=pPos[i*3+2]=9999;
+  pGeo.attributes.position.needsUpdate=true;pGeo.attributes.color.needsUpdate=true;
+  pGeo.setDrawRange(0,n);
+}
+
+// ── غيوم ──
+const clouds=[];
+function makeCloud(x,y,z){
+  const g=new THREE.Group();
+  const m=new THREE.MeshStandardMaterial({color:0xf0ece6,roughness:1,metalness:0,transparent:true,opacity:0.78});
+  [[0,0,0,1.1],[1.3,.2,0,.85],[-.95,.1,0,.75],[.45,.55,0,.65]].forEach(([cx,cy,cz,r])=>{
+    const ms=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),m);ms.position.set(cx,cy,cz);g.add(ms);
+  });
+  g.position.set(x,y,z);scene.add(g);return g;
+}
+for(let i=0;i<12;i++)
+  clouds.push(makeCloud((Math.random()-.5)*120+CX,18+Math.random()*8,(Math.random()-.5)*100+CZ-20));
+
+// ── فلاش ──
+let flashMesh=null,flashT=0,flashMax=1;
+function flashScene(col,intensity,frames){
+  if(!flashMesh){
+    flashMesh=new THREE.Mesh(new THREE.SphereGeometry(200,8,6),
+      new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,
+        blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.BackSide}));
+    flashMesh.position.set(CX,0,CZ);scene.add(flashMesh);
+  }
+  flashMesh.material.color.setHex(col);flashMesh.material.opacity=intensity;flashT=frames;flashMax=frames;
+}
+let shakeAmt=0,shakeTime=0;
+
+// ═══════════════════════════════════════════
+//  POWERUP MESHES
+// ═══════════════════════════════════════════
+function createPowerupMesh(type){
+  const cfgs={
+    life: {geo:new THREE.SphereGeometry(.56,12,8),   color:0x00aaff,em:0x0055cc},
+    bonus:{geo:new THREE.OctahedronGeometry(.52,0),   color:0xffcc00,em:0xff8800},
+    speed:{geo:new THREE.ConeGeometry(.36,.78,8),     color:0x00ff88,em:0x00aa44},
+    slow: {geo:new THREE.IcosahedronGeometry(.48,0),  color:0xcc88ff,em:0x6600cc},
+  };
+  const c=cfgs[type];
+  const mat=new THREE.MeshStandardMaterial({
+    color:c.color,emissive:new THREE.Color(c.em),emissiveIntensity:.75,
+    roughness:.18,metalness:.35,transparent:true,opacity:.92
+  });
+  const mesh=new THREE.Mesh(c.geo,mat);mesh.castShadow=true;
+  // حلقة توهج
+  const ring=new THREE.Mesh(
+    new THREE.TorusGeometry(.76,.055,8,32),
+    new THREE.MeshBasicMaterial({color:c.color,transparent:true,opacity:.55})
+  );
+  ring.rotation.x=Math.PI/2;mesh.add(ring);
+  // ظل
+  const sdisk=new THREE.Mesh(new THREE.CircleGeometry(.58,12),
+    new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.10,depthWrite:false}));
+  sdisk.rotation.x=-Math.PI/2;sdisk.position.y=-.95;mesh.add(sdisk);
+  mesh._pwtype=type;
+  mesh._spawnTime=animTime;
+  return mesh;
+}
+
+// ═══════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════
+let AC=null;
+function ac(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC;}
+function snd(type){
+  try{
+    const a=ac(),t=a.currentTime;
+
+    // صوت الفوز الكبير — سلسلة نغمات احتفالية
+    if(type==='bigwin'){
+      const melody=[523,659,784,880,659,784,1047,880,1047,1319,1047,1319,1568];
+      melody.forEach((f,i)=>{
+        const o=a.createOscillator(),g=a.createGain();
+        o.connect(g);g.connect(a.destination);
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(.14,t+i*.1);
+        g.gain.exponentialRampToValueAtTime(.001,t+i*.1+.16);
+        o.start(t+i*.1);o.stop(t+i*.1+.2);
+      });
+      // وتر نهائي
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=a.createOscillator(),g=a.createGain();
+        o.connect(g);g.connect(a.destination);
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(.12,t+1.45);
+        g.gain.exponentialRampToValueAtTime(.001,t+2.8);
+        o.start(t+1.45);o.stop(t+2.9);
+      });
+      // قرع
+      const nd=a.createOscillator(),ng=a.createGain();
+      nd.connect(ng);ng.connect(a.destination);
+      nd.type='sawtooth';nd.frequency.setValueAtTime(90,t);
+      nd.frequency.exponentialRampToValueAtTime(30,t+.4);
+      ng.gain.setValueAtTime(.2,t);ng.gain.exponentialRampToValueAtTime(.001,t+.4);
+      nd.start(t);nd.stop(t+.4);
+      return;
+    }
+
+    const o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    const D={
+      step: {f:280,t:'square',v:.018,d:.03},
+      fill: {f:480,t:'sine',v:.13,d:.5,s:1200},
+      die:  {f:240,t:'sawtooth',v:.16,d:.55,s:50},
+      lvl:  {f:500,t:'sine',v:.13,d:.8},
+      pwup: {f:660,t:'sine',v:.12,d:.28,s:1100},
+    }[type]||{f:380,t:'sine',v:.09,d:.1};
+    o.type=D.t;o.frequency.setValueAtTime(D.f,t);
+    if(D.s)o.frequency.exponentialRampToValueAtTime(D.s,t+D.d*.7);
+    g.gain.setValueAtTime(D.v,t);g.gain.exponentialRampToValueAtTime(.001,t+D.d);
+    o.start(t);o.stop(t+D.d);
+    if(type==='lvl')[620,740,990].forEach((f,i)=>{
+      const o2=a.createOscillator(),g2=a.createGain();o2.connect(g2);g2.connect(a.destination);
+      o2.frequency.value=f;g2.gain.setValueAtTime(.11,t+i*.15);g2.gain.exponentialRampToValueAtTime(.001,t+i*.15+.22);
+      o2.start(t+i*.15);o2.stop(t+i*.15+.25);
+    });
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════
+let gstate='menu',score=0,hiScore=0,lives=26,level=1,pct=0,target=75;
+let grid=[],P={},enemies=[],animTime=0;
+let playerName='';
+let speedBoostTimer=0,slowEnemyTimer=0,slowApplied=false;
+let powerupSpawnTimer=0, powerups=[];
+
+// تحميل أعلى نقاط من التخزين
+try{hiScore=parseInt(localStorage.getItem('motaphonixo_hi')||'0');}catch(e){}
+
+// ═══════════════════════════════════════════
+//  GRID (منطق أصلي 100%)
+// ═══════════════════════════════════════════
+function initGrid(){
+  grid=[];
+  for(let r=0;r<ROWS;r++){grid[r]=new Uint8Array(COLS);
+    for(let c=0;c<COLS;c++)grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?FILL:EMPTY;}
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+    tileY[r*COLS+c]=grid[r][c]===FILL?.18:-1;
+}
+function G(r,c){if(r<0||r>=ROWS||c<0||c>=COLS)return FILL;return grid[r][c];}
+function S(r,c,v){if(r>=0&&r<ROWS&&c>=0&&c<COLS)grid[r][c]=v;}
+function calcPct(){let f=0;
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++)if(grid[r][c]===FILL)f++;
+  return Math.floor(f/((COLS-2)*(ROWS-2))*100);}
+
+// flood fill (منطق أصلي محفوظ)
+function doFill(){
+  let pathCnt=0;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+    if(grid[r][c]===PATH){grid[r][c]=FILL;tileY[r*COLS+c]=.18;pathCnt++;}
+  if(!pathCnt)return 0;
+  const mark=new Uint8Array(ROWS*COLS),Q=[];
+  for(const e of enemies){
+    const er=Math.floor(e.y/CELL),ec=Math.floor(e.x/CELL),dirs=[-1,0,1,0,-1];
+    for(let d=0;d<4;d++){
+      const nr=er+dirs[d],nc=ec+dirs[d+1];
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc]===EMPTY&&!mark[nr*COLS+nc]){mark[nr*COLS+nc]=1;Q.push(nr*COLS+nc);}
+    }
+  }
+  let qi=0;
+  while(qi<Q.length){
+    const idx=Q[qi++],r=Math.floor(idx/COLS),c=idx%COLS,dirs=[-1,0,1,0,-1];
+    for(let d=0;d<4;d++){
+      const nr=r+dirs[d],nc=c+dirs[d+1];
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc]===EMPTY&&!mark[nr*COLS+nc]){mark[nr*COLS+nc]=1;Q.push(nr*COLS+nc);}
+    }
+  }
+  let cap=0;const pts=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+    if(grid[r][c]===EMPTY&&!mark[r*COLS+c]){grid[r][c]=FILL;cap++;pts.push({r,c});tileY[r*COLS+c]=-.4;}
+  if(cap>0){
+    const cr=pts.reduce((s,p)=>s+p.r,0)/pts.length;
+    const cc=pts.reduce((s,p)=>s+p.c,0)/pts.length;
+    burst3D(cc,.6,cr,Math.min(cap,80),0x004f70);
+    burst3D(cc,.6,cr,30,0x015660);
+    burst3D(cc,.6,cr,20,0xa25701);
+    snd('fill');flashScene(0x007f2d,.18,16);
+  }
+  return cap;
+}
+
+// ═══════════════════════════════════════════
+//  PLAYER & ENEMIES (منطق أصلي 100%)
+// ═══════════════════════════════════════════
+function initPlayer(){
+  P={col:Math.floor(COLS/2),row:0,dx:0,dy:0,drawing:false,
+    moveTimer:0,interval:LEVELS[Math.min(level-1,MAX_LVL-1)].pSpd,dying:false,invTimer:0};
+}
+
+function initEnemies(){
+  enemies=[];
+  while(enemyObjs.length){const o=enemyObjs.pop();enemyGroup.remove(o.sphere);o.trails.forEach(t=>scene.remove(t));}
+  const cfg=LEVELS[Math.min(level-1,MAX_LVL-1)];
+  for(let i=0;i<cfg.enemies;i++){
+    let ex,ey,tries=0;
+    do{ex=3.5+Math.random()*(COLS-7);ey=3.5+Math.random()*(ROWS-7);tries++;}
+    while((G(Math.floor(ey),Math.floor(ex))!==EMPTY||(Math.abs(ex-P.col)<8&&Math.abs(ey-P.row)<8))&&tries<200);
+    const a=Math.random()*Math.PI*2;
+    enemies.push({x:ex*CELL,y:ey*CELL,vx:Math.cos(a)*cfg.eSpd,vy:Math.sin(a)*cfg.eSpd,
+      r:CELL*.45,isHunter:i<cfg.hunters,tail:[],pulseT:Math.random()*Math.PI*2});
+    const obj=buildEnemyMesh(i<cfg.hunters,i);enemyObjs.push(obj);
+    const li=enemyLights[i<enemyLights.length?i:enemyLights.length-1];
+    li.color.setHex(ECOLS3D[i%ECOLS3D.length]);li.visible=true;
+  }
+  for(let i=cfg.enemies;i<enemyLights.length;i++)enemyLights[i].visible=false;
+}
+
+function updateEnemies(){
+  for(let ei=0;ei<enemies.length;ei++){
+    const e=enemies[ei];e.pulseT+=.07;
+    e.tail.unshift({x:e.x,y:e.y});if(e.tail.length>8)e.tail.pop();
+    if(e.isHunter&&P.drawing){
+      const pts=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c]===PATH)pts.push({r,c});
+      if(pts.length){
+        const cr=pts.reduce((s,p)=>s+p.r,0)/pts.length*CELL;
+        const cc=pts.reduce((s,p)=>s+p.c,0)/pts.length*CELL;
+        const dx=cc-e.x,dy=cr-e.y,len=Math.hypot(dx,dy)||1;
+        // عامل التسارع مضروب في بطء لو نشط
+        const accelFactor = slowApplied ? 0.012 : 0.04;
+        e.vx+=(dx/len)*accelFactor;e.vy+=(dy/len)*accelFactor;
+        const sp=Math.hypot(e.vx,e.vy);
+        const mx=LEVELS[Math.min(level-1,MAX_LVL-1)].eSpd*(slowApplied?SLOW_FACTOR*1.4:1.4);
+        if(sp>mx){e.vx=e.vx/sp*mx;e.vy=e.vy/sp*mx;}
+      }
+    }
+    let nx=e.x+e.vx,ny=e.y+e.vy;
+    const rowsX=[Math.floor((e.y-e.r*.6)/CELL),Math.floor(e.y/CELL),Math.floor((e.y+e.r*.6)/CELL)];
+    let hitX=false,hitPath=false;
+    for(const rr of rowsX){
+      const cL=Math.floor((nx-e.r)/CELL),cR=Math.floor((nx+e.r)/CELL);
+      if(G(rr,cL)===FILL||G(rr,cR)===FILL)hitX=true;
+      if(G(rr,cL)===PATH||G(rr,cR)===PATH)hitPath=true;
+    }
+    if(hitPath){playerDie();return;}
+    if(hitX){e.vx*=-1;nx=e.x;}else e.x=nx;
+    const colsY=[Math.floor((e.x-e.r*.6)/CELL),Math.floor(e.x/CELL),Math.floor((e.x+e.r*.6)/CELL)];
+    let hitY=false;
+    for(const cc of colsY){
+      const rT=Math.floor((ny-e.r)/CELL),rB=Math.floor((ny+e.r)/CELL);
+      if(G(rT,cc)===FILL||G(rB,cc)===FILL)hitY=true;
+      if(G(rT,cc)===PATH||G(rB,cc)===PATH)hitPath=true;
+    }
+    if(hitPath){playerDie();return;}
+    if(hitY){e.vy*=-1;ny=e.y;}else e.y=ny;
+    if(!P.dying&&P.drawing){
+      const dist=Math.hypot(e.x-(P.col*CELL+CELL/2),e.y-(P.row*CELL+CELL/2));
+      if(dist<e.r+CELL*.4)playerDie();
+    }
+  }
+}
+
+// ── حركة اللاعب (منطق أصلي + فحص powerup) ──
+function movePlayer(){
+  if(P.dying)return;if(P.invTimer>0)P.invTimer--;
+  let dx=0,dy=0;
+  if(keys['ArrowLeft']||keys['a']||keys['A']||keys['ش'])dx=-1;
+  else if(keys['ArrowRight']||keys['d']||keys['D']||keys['ي'])dx=1;
+  else if(keys['ArrowUp']||keys['w']||keys['W']||keys['ص'])dy=-1;
+  else if(keys['ArrowDown']||keys['s']||keys['S']||keys['س'])dy=1;
+  if(!dx&&!dy){if(P.drawing){dx=P.dx;dy=P.dy;}else return;}
+  const nc=P.col+dx,nr=P.row+dy;
+  if(nc<0||nc>=COLS||nr<0||nr>=ROWS)return;
+  const tgt=G(nr,nc);if(tgt===PATH){playerDie();return;}
+  P.col=nc;P.row=nr;P.dx=dx;P.dy=dy;
+  // ✦ فحص الـ powerups بعد التحرك مباشرة
+  checkPowerupCollection();
+  if(tgt===EMPTY){P.drawing=true;S(nr,nc,PATH);snd('step');tileY[nr*COLS+nc]=.14;}
+  else if(tgt===FILL&&P.drawing){
+    P.drawing=false;P.dx=0;P.dy=0;
+    const cap=doFill();
+    if(cap>0){
+      // نقاط معدّلة — مقروءة حتى مع ٢٥ مستوى
+      score+=Math.max(1,Math.floor(cap*level/10));
+      pct=calcPct();updateHUD();
+      if(pct>=target){
+        if(level>=MAX_LVL)setTimeout(()=>{gstate='win';showWin();},500);
+        else setTimeout(()=>{gstate='levelclear';showLevelClear();},500);
+      }
+    }
+  }
+}
+
+function playerDie(){
+  if(P.dying)return;P.dying=true;snd('die');
+  burst3D(P.col,.5,P.row,60,0xc05030);
+  burst3D(P.col,.5,P.row,30,0xe0a060);
+  burst3D(P.col,.5,P.row,15,0xf0e0d0);
+  flashScene(0xc05030,.25,24);shakeAmt=.38;shakeTime=20;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+    if(grid[r][c]===PATH){grid[r][c]=EMPTY;tileY[r*COLS+c]=-1;}
+  lives--;
+  updateHUD();
+  if(lives<=0){setTimeout(()=>{gstate='gameover';showGameOver();},900);}
+  else{setTimeout(()=>{initPlayer();P.invTimer=120;},700);}
+}
+
+// ═══════════════════════════════════════════
+//  POWERUP SYSTEM
+// ═══════════════════════════════════════════
+function spawnPowerup(){
+  if(powerups.length>=3)return;
+  let tries=0,col,row;
+  do{
+    col=3+Math.floor(Math.random()*(COLS-6));
+    row=3+Math.floor(Math.random()*(ROWS-6));
+    tries++;
+  }while((grid[row][col]!==EMPTY||(Math.abs(col-P.col)<5&&Math.abs(row-P.row)<5))&&tries<200);
+  if(tries>=200||grid[row][col]!==EMPTY)return;
+
+  const types=['life','bonus','speed','slow'];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const mesh=createPowerupMesh(type);
+  mesh.position.set(col,.92,row);
+  mesh._spawnTime=animTime;
+  scene.add(mesh);
+  powerups.push({type,col,row,mesh});
+}
+
+function checkPowerupCollection(){
+  for(let i=powerups.length-1;i>=0;i--){
+    const pw=powerups[i];
+    // نطاق التقاط واسع: الخلية ذاتها + الخلايا المجاورة (مسافة <= 1.5 خلية)
+    const dist=Math.hypot(P.col-pw.col, P.row-pw.row);
+    if(dist<=1.5){
+      collectPowerup(pw);
+      scene.remove(pw.mesh);
+      powerups.splice(i,1);
+    }
+  }
+}
+
+function collectPowerup(pw){
+  snd('pwup');
+  const colMap={life:0x00aaff,bonus:0xffcc00,speed:0x00ff88,slow:0xcc88ff};
+  burst3D(pw.col,.9,pw.row,25,colMap[pw.type]);
+  flashScene(colMap[pw.type],.14,10);
+  switch(pw.type){
+    case 'life':
+      lives++;updateHUD();
+      showToast('💙 محاولة إضافية!','#00aaff');
+      break;
+    case 'bonus':
+      const bonusAmt=level*50;
+      score+=bonusAmt;if(score>hiScore)hiScore=score;
+      updateHUD();
+      showToast('⭐ +'+bonusAmt.toLocaleString()+' نقطة!','#ffcc00');
+      break;
+    case 'speed':
+      speedBoostTimer=POWERUP_DURATION;
+      showToast('⚡ سرعة مؤقتة!','#00ff88');
+      updateHUD();
+      break;
+    case 'slow':
+      if(!slowApplied){
+        for(const e of enemies){
+          e._origSpd=Math.hypot(e.vx,e.vy);
+          const sp=e._origSpd||0.001;
+          e.vx=(e.vx/sp)*(sp*SLOW_FACTOR);
+          e.vy=(e.vy/sp)*(sp*SLOW_FACTOR);
+        }
+        slowApplied=true;
+      }
+      slowEnemyTimer=POWERUP_DURATION;
+      showToast('❄️ تبطيء الأعداء!','#cc88ff');
+      updateHUD();
+      break;
+  }
+}
+
+function updatePowerups(){
+  for(let i=powerups.length-1;i>=0;i--){
+    const pw=powerups[i];
+    // رسوم متحركة
+    pw.mesh.position.y=.88+.22*Math.sin(animTime*.07+pw.mesh._spawnTime*.001);
+    pw.mesh.rotation.y+=.04;
+    // انتهاء صلاحية الـ powerup على الأرض
+    if(animTime-pw.mesh._spawnTime>POWERUP_LIFETIME){
+      scene.remove(pw.mesh);powerups.splice(i,1);
+    }
+  }
+}
+
+function showToast(msg,color){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.color=color||'#fff';
+  t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._tmr);
+  t._tmr=setTimeout(()=>{
+    t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-14px)';
+  },2200);
+}
+
+// ═══════════════════════════════════════════
+//  SCENE UPDATE FUNCTIONS
+// ═══════════════════════════════════════════
+function updateTiles(){
+  let fi=0,pi=0;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const v=grid[r][c],idx=r*COLS+c;
+    if(v===FILL){
+      if(tileY[idx]<.18)tileY[idx]=Math.min(.18,tileY[idx]+.034);
+      dummy.position.set(c,tileY[idx],r);dummy.scale.set(1,1,1);dummy.rotation.set(0,0,0);
+      dummy.updateMatrix();fillMesh.setMatrixAt(fi++,dummy.matrix);
+    }else tileY[idx]=-1;
+    if(v===PATH){
+      dummy.position.set(c,.14,r);dummy.scale.set(1,1,1);dummy.rotation.set(0,0,0);
+      dummy.updateMatrix();pathMesh.setMatrixAt(pi++,dummy.matrix);
+    }
+  }
+  fillMesh.count=fi;fillMesh.instanceMatrix.needsUpdate=true;
+  pathMesh.count=pi;pathMesh.instanceMatrix.needsUpdate=true;
+  if(pi>0)pathMat.emissiveIntensity=.22+.18*Math.sin(animTime*.09);
+  fillMat.emissiveIntensity=.08+.04*Math.sin(animTime*.022);
+}
+
+function updatePlayerMesh(){
+  if(P.dying){playerMesh.visible=false;return;}
+  playerMesh.visible=!(P.invTimer>0&&Math.floor(P.invTimer/6)%2===1);
+  const wy=.54+.07*Math.sin(animTime*.07);
+  // لون مختلف عند تأثير السرعة
+  const speedGlow=speedBoostTimer>0;
+  playerMesh.position.set(P.col,wy,P.row);
+  playerMesh.rotation.y=animTime*.045;playerMesh.rotation.x=animTime*.028;
+  playerLight.position.set(P.col,wy+.5,P.row);
+  playerLight.color.setHex(P.drawing?(speedGlow?0x00ff88:0x6bc17b):0x208306);
+  playerLight.intensity=P.drawing?4:2.8;
+  plMat.color.setHex(speedGlow?0x00cc66:(P.drawing?0x5ab030:0x04009a));
+  plMat.emissive.setHex(speedGlow?0x00ff88:(P.drawing?0x209032:0xdaff0b));
+  plMat.emissiveIntensity=.38+.2*Math.sin(animTime*.08);
+  plRing.material.color.setHex(P.drawing?0x4054d0:0x1d128d);
+  plRing.material.opacity=.38+.22*Math.sin(animTime*.06);
+  plRing.rotation.z=animTime*.03;
+}
+
+function updateEnemyMeshes(){
+  for(let ei=0;ei<enemies.length&&ei<enemyObjs.length;ei++){
+    const e=enemies[ei],obj=enemyObjs[ei];
+    const wx=e.x/CELL,wz=e.y/CELL,wy=.46+.06*Math.sin(e.pulseT*1.4);
+    obj.sphere.position.set(wx,wy,wz);obj.sphere.rotation.y=e.pulseT*.8;obj.sphere.rotation.z=e.pulseT*.45;
+    // لون مختلف عند التبطيء
+    if(slowApplied){
+      obj.sphere.material.color.setHex(0x6633aa);
+      obj.sphere.material.emissive.setHex(0x4422aa);
+    }else{
+      obj.sphere.material.color.setHex(obj.col.getHex?obj.col.getHex():ECOLS3D[ei%ECOLS3D.length]);
+      obj.sphere.material.emissive.setHex(ECOLS3D[ei%ECOLS3D.length]);
+    }
+    if(obj.ring&&P.drawing){
+      obj.ring.material.opacity=.55+.3*Math.sin(e.pulseT*2.5);
+      obj.ring.rotation.x=e.pulseT*1.6;obj.ring.scale.setScalar(1+.16*Math.sin(e.pulseT*3.2));
+    }
+    const li=enemyLights[ei<enemyLights.length?ei:enemyLights.length-1];
+    if(li){li.position.set(wx,wy+.6,wz);li.intensity=1.6+1.1*Math.sin(e.pulseT*2);}
+    for(let t=0;t<obj.trails.length&&t<e.tail.length;t++){
+      const tail=e.tail[t];
+      obj.trails[t].position.set(tail.x/CELL,.44*(1-t/obj.trails.length*.4),tail.y/CELL);
+      obj.trails[t].material.opacity=(1-t/obj.trails.length)*.18;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+//  HUD
+// ═══════════════════════════════════════════
+function updateHUD(){
+  const th=LEVEL_THEMES[Math.min(level-1,LEVEL_THEMES.length-1)];
+  const lvlEl=document.getElementById('dLvl');
+  lvlEl.textContent=level+' '+th.sym;
+  lvlEl.style.color=th.css;
+  document.getElementById('dScore').textContent=score.toLocaleString();
+  document.getElementById('dHigh').textContent=Math.max(score,hiScore).toLocaleString();
+  document.getElementById('dPct').textContent=pct+'% / '+target+'%';
+  const ld=document.getElementById('dLives');ld.innerHTML='';
+  for(let i=0;i<lives;i++){const d=document.createElement('div');d.className='li-dot';ld.appendChild(d);}
+  const bar=document.getElementById('pbar');bar.style.width=Math.min(pct,100)+'%';
+  document.getElementById('ptarget').style.left=target+'%';
+  if(pct>=target){bar.style.background='#3402a6';}
+  else if(pct>=target-10){bar.style.background='#a530b0';}
+  else{bar.style.background='#038906';}
+  // HUD border theme color
+  document.getElementById('stats').style.borderBottomColor=th.css+'55';
+  // Powerup bar
+  const hasEffect=speedBoostTimer>0||slowEnemyTimer>0;
+  const pwBar=document.getElementById('pw-bar');
+  pwBar.style.display=hasEffect?'flex':'none';
+  const pwS=document.getElementById('pwSpeed');
+  pwS.style.display=speedBoostTimer>0?'flex':'none';
+  if(speedBoostTimer>0)document.getElementById('pwSpeedT').textContent=Math.ceil(speedBoostTimer/60)+'ث';
+  const pwSl=document.getElementById('pwSlow');
+  pwSl.style.display=slowEnemyTimer>0?'flex':'none';
+  if(slowEnemyTimer>0)document.getElementById('pwSlowT').textContent=Math.ceil(slowEnemyTimer/60)+'ث';
+}
+
+// ═══════════════════════════════════════════
+//  SCREENS
+// ═══════════════════════════════════════════
+function showOnly(id){
+  ['sMenu','sPause','sLvl','sOver','sWin','sLeader'].forEach(s=>{
+    const el=document.getElementById(s);if(el)el.style.display=(s===id?'block':'none');});
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function hideOverlay(){document.getElementById('overlay').classList.add('hidden');}
+
+function showLevelBadge(){
+  const th=LEVEL_THEMES[Math.min(level-1,LEVEL_THEMES.length-1)];
+  const bd=document.getElementById('level-badge');
+  const bi=bd.querySelector('.badge-inner');
+  bi.style.borderColor=th.css;
+  document.getElementById('badgeNum').style.color=th.css;
+  document.getElementById('badgeNum').textContent='مستوى '+level+' — '+th.name;
+  document.getElementById('badgeSym').textContent=th.sym;
+  bd.style.display='flex';bd.style.opacity='0';
+  requestAnimationFrame(()=>{
+    bd.style.opacity='1';
+    clearTimeout(bd._t);
+    bd._t=setTimeout(()=>{
+      bd.style.opacity='0';
+      setTimeout(()=>{bd.style.display='none';},500);
+    },2200);
+  });
+}
+
+function showLevelClear(){
+  // نقاط مكافأة المستوى المعدّلة
+  const bonus=Math.floor(pct*level*1.2);
+  score+=bonus;if(score>hiScore)hiScore=score;
+  const th=LEVEL_THEMES[Math.min(level-1,LEVEL_THEMES.length-1)];
+  document.getElementById('lvlTitle').textContent='✦ '+th.sym+' مستوى مكتمل!';
+  document.getElementById('lvlScore').textContent='نقاط: '+score.toLocaleString();
+  document.getElementById('lvlMsg').textContent='مستوى '+level+' — '+th.name+' | '+pct+'% | مكافأة +'+bonus.toLocaleString();
+  // ✦ حفظ أول بأول بعد كل مرحلة
+  saveScore();
+  snd('lvl');showOnly('sLvl');
+}
+
+function showGameOver(){
+  saveScore();
+  if(score>hiScore)hiScore=score;
+  document.getElementById('overScore').textContent='نقاط: '+score.toLocaleString();
+  document.getElementById('overHigh').textContent='أعلى نقاط: '+Math.max(score,hiScore).toLocaleString();
+  showOnly('sOver');
+}
+
+function showWin(){
+  saveScore();
+  if(score>hiScore)hiScore=score;
+  document.getElementById('winScore').textContent='النقاط النهائية: '+score.toLocaleString();
+  const nameDiv=document.getElementById('winPlayerNameDiv');
+  nameDiv.textContent=playerName?'👑 مبروك '+playerName+'!':'👑 أحسنت!';
+  // احتفال بالجسيمات والصوت
+  snd('bigwin');
+  flashScene(0xffdd00,.32,30);shakeAmt=.5;shakeTime=30;
+  const celebColors=[0xffdd00,0xff4444,0x4466ff,0x44ff88,0xff44ff,0xff8800];
+  for(let i=0;i<8;i++){
+    setTimeout(()=>{
+      const cx=CX+(Math.random()-.5)*30;
+      const cz=CZ+(Math.random()-.5)*20;
+      burst3D(cx,2,cz,60,celebColors[Math.floor(Math.random()*celebColors.length)]);
+      flashScene(celebColors[Math.floor(Math.random()*celebColors.length)],.15,8);
+    },i*280);
+  }
+  showOnly('sWin');
+}
+
+function startLevel(){
+  // مسح الـ powerups القديمة
+  for(const pw of powerups)scene.remove(pw.mesh);
+  powerups=[];powerupSpawnTimer=0;
+  // إيقاف تأثيرات مؤقتة — سيتم إعادة تهيئة الأعداء
+  speedBoostTimer=0;slowEnemyTimer=0;slowApplied=false;
+  initGrid();initPlayer();initEnemies();
+  pct=0;target=LEVELS[Math.min(level-1,MAX_LVL-1)].target;
+  gstate='playing';updateHUD();hideOverlay();
+  // لون خلفية المشهد حسب المستوى
+  const bgHex=LEVEL_THEMES[Math.min(level-1,LEVEL_THEMES.length-1)].bg;
+  scene.background.setHex(bgHex);
+  scene.fog.color.setHex(bgHex);
+  // إعادة ضبط الكاميرا فورياً عند بداية المستوى
+  if(isMobile()){
+    const px=P.col,pz=P.row;
+    camTarget.x=px;camTarget.y=22;camTarget.z=pz+14;
+    camLook.x=px;camLook.y=0;camLook.z=pz-1;
+    camera.position.set(px,22,pz+14);camera.lookAt(px,0,pz-1);
+  }else{
+    setCameraDefault();camera.lookAt(CX,0,CZ-2);
+  }
+  // شارة المستوى
+  setTimeout(showLevelBadge,200);
+}
+
+function startGame(){
+  playerName=(document.getElementById('playerNameInput').value||'').trim()||'لاعب';
+  score=0;level=1;lives=26;
+  sessionScoreId=null; // جلسة جديدة = سجل جديد
+  try{hiScore=parseInt(localStorage.getItem('motaphonixo_hi')||'0');}catch(e){}
+  startLevel();
+}
+
+function nextLevel(){level++;startLevel();}
+
+// ═══════════════════════════════════════════
+//  LOCALSTORAGE — حفظ وعرض النتائج
+// ═══════════════════════════════════════════
+// معرف الجلسة الحالية — لتحديث نفس السجل بدل إضافة مكررات
+let sessionScoreId=null;
+
+function saveScore(){
+  if(!playerName)return;
+  const key='motaphonixo_scores';
+  let scores=[];
+  try{scores=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  const today=new Date().toLocaleDateString('ar');
+  if(sessionScoreId!==null){
+    // تحديث السجل الحالي للجلسة
+    const idx=scores.findIndex(s=>s._id===sessionScoreId);
+    if(idx>=0){scores[idx]={...scores[idx],score,level,date:today};}
+    else{scores.push({name:playerName,score,level,date:today,_id:sessionScoreId});}
+  }else{
+    sessionScoreId=Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    scores.push({name:playerName,score,level,date:today,_id:sessionScoreId});
+  }
+  scores.sort((a,b)=>b.score-a.score);
+  scores=scores.slice(0,10);
+  try{
+    localStorage.setItem(key,JSON.stringify(scores));
+    const storedHi=parseInt(localStorage.getItem('motaphonixo_hi')||'0');
+    if(score>storedHi)localStorage.setItem('motaphonixo_hi',String(score));
+  }catch(e){}
+}
+
+function showLeaderboard(){
+  const key='motaphonixo_scores';
+  let scores=[];
+  try{scores=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  const list=document.getElementById('leaderList');
+  if(!scores.length){
+    list.innerHTML='<div class="no-scores">لا توجد نتائج محفوظة بعد<br><small>العب وانهِ مستوى لتظهر هنا</small></div>';
+  }else{
+    const medals=['🥇','🥈','🥉'];
+    list.innerHTML=scores.map((s,i)=>`
+      <div class="leader-row" style="border-right-color:${i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'#6060cc'}">
+        <span class="leader-rank">${medals[i]||(i+1)+'.'}</span>
+        <span class="leader-name">${s.name}</span>
+        <span class="leader-score">${s.score.toLocaleString()}</span>
+        <span class="leader-lvl">م${s.level}</span>
+        <span class="leader-date">${s.date||''}</span>
+      </div>
+    `).join('');
+  }
+  showOnly('sLeader');
+}
+
+// ═══════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════
+const keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+  if(e.key==='p'||e.key==='P'||e.key==='ح'||e.key==='Escape'){
+    if(gstate==='playing'){gstate='paused';showOnly('sPause');}
+    else if(gstate==='paused'){gstate='playing';hideOverlay();}
+  }
+  if(e.key==='Enter'){
+    if(['menu','gameover','win'].includes(gstate))startGame();
+    else if(gstate==='levelclear')nextLevel();
+    else if(gstate==='paused'){gstate='playing';hideOverlay();}
+  }
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+document.querySelectorAll('.db').forEach(btn=>{
+  const k=btn.dataset.k;if(!k)return;
+  const pr=()=>{keys[k]=true;btn.classList.add('pr');};
+  const rl=()=>{keys[k]=false;btn.classList.remove('pr');};
+  btn.addEventListener('touchstart',e=>{e.preventDefault();pr();},{passive:false});
+  btn.addEventListener('touchend',e=>{e.preventDefault();rl();},{passive:false});
+  btn.addEventListener('mousedown',pr);btn.addEventListener('mouseup',rl);btn.addEventListener('mouseleave',rl);
+});
+
+// ── زر المنتصف (dC) → إيقاف / استمرار ──
+(function(){
+  const dc=document.getElementById('dC');
+  function togglePause(e){
+    e.preventDefault();e.stopPropagation();
+    if(gstate==='playing'){gstate='paused';showOnly('sPause');}
+    else if(gstate==='paused'){gstate='playing';hideOverlay();}
+  }
+  dc.addEventListener('touchstart',togglePause,{passive:false});
+  dc.addEventListener('mousedown',togglePause);
+})();
+
+document.getElementById('btnStart').addEventListener('click',startGame);
+document.getElementById('btnResume').addEventListener('click',()=>{gstate='playing';hideOverlay();});
+document.getElementById('btnNext').addEventListener('click',nextLevel);
+document.getElementById('btnRestart').addEventListener('click',startGame);
+document.getElementById('btnWinRestart').addEventListener('click',startGame);
+
+document.getElementById('btnLeader').addEventListener('click',showLeaderboard);
+document.getElementById('btnOverLeader').addEventListener('click',showLeaderboard);
+document.getElementById('btnWinLeader').addEventListener('click',showLeaderboard);
+document.getElementById('btnLeaderBack').addEventListener('click',()=>{showOnly('sMenu');});
+document.getElementById('btnClearScores').addEventListener('click',()=>{
+  if(confirm('هل تريد مسح جميع النتائج المحفوظة؟')){
+    try{localStorage.removeItem('motaphonixo_scores');localStorage.removeItem('motaphonixo_hi');}catch(e){}
+    hiScore=0;updateHUD();showLeaderboard();
+  }
+});
+
+// ═══════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════
+let moveTimer=0;
+// لون خلفية المستوى المحفوظ
+let levelBgHex=0x8dbbbf;
+
+function update(){
+  if(gstate!=='playing')return;
+  moveTimer++;
+  // سرعة اللاعب — تأثير الـ speedBoost
+  const baseInterval=LEVELS[Math.min(level-1,MAX_LVL-1)].pSpd;
+  const interval=speedBoostTimer>0?Math.max(1,Math.floor(baseInterval*.5)):baseInterval;
+  if(moveTimer>=interval){moveTimer=0;movePlayer();}
+  updateEnemies();
+
+  // ── مؤقتات الـ Powerups ──
+  if(speedBoostTimer>0){
+    speedBoostTimer--;
+    if(speedBoostTimer===0){showToast('⚡ انتهت السرعة','#888888');updateHUD();}
+  }
+  if(slowEnemyTimer>0){
+    slowEnemyTimer--;
+    if(slowEnemyTimer===0&&slowApplied){
+      // استعادة سرعة الأعداء
+      for(const e of enemies){
+        const spd=Math.hypot(e.vx,e.vy)||0.001;
+        const orig=e._origSpd||LEVELS[Math.min(level-1,MAX_LVL-1)].eSpd;
+        e.vx=(e.vx/spd)*orig;e.vy=(e.vy/spd)*orig;
+      }
+      slowApplied=false;
+      showToast('❄️ عاد الأعداء لسرعتهم','#888888');updateHUD();
+    }
+  }
+
+  // ── توليد powerups دوريًا ──
+  powerupSpawnTimer++;
+  if(powerupSpawnTimer>=POWERUP_SPAWN_T){powerupSpawnTimer=0;spawnPowerup();}
+
+  // خلفية اللعبة
+  if(pct>=target-8&&pct<target){
+    const p=.006+.008*Math.sin(Date.now()*.006);
+    scene.background.setRGB(.82+p,.76+p*.3,.68-p*.2);
+  }else{
+    const th=LEVEL_THEMES[Math.min(level-1,LEVEL_THEMES.length-1)];
+    scene.background.setHex(th.bg);
+    scene.fog.color.setHex(th.bg);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  MINIMAP  (هاتف فقط)
+// ═══════════════════════════════════════════
+const mmCanvas = document.getElementById('mm');
+const mmCtx    = mmCanvas.getContext('2d');
+const MM_W=110, MM_H=74;
+const MM_CW=MM_W/COLS, MM_CH=MM_H/ROWS; // ~1.83 × 1.85 px per cell
+
+function drawMinimap(){
+  if(!isMobile()) return;
+  const active = gstate==='playing'||gstate==='paused';
+  document.getElementById('mm-wrap').style.display = active ? 'block' : 'none';
+  if(!active) return;
+
+  mmCtx.clearRect(0,0,MM_W,MM_H);
+
+  // ── خلفية ──
+  mmCtx.fillStyle='rgba(8,6,22,0.85)';
+  mmCtx.fillRect(0,0,MM_W,MM_H);
+
+  // ── شبكة (Fill / Path / Empty) ──
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const v=grid[r][c];
+      if(v===FILL){
+        mmCtx.fillStyle='#1a7a30';
+        mmCtx.fillRect(c*MM_CW, r*MM_CH, MM_CW, MM_CH);
+      }else if(v===PATH){
+        mmCtx.fillStyle='#e07020';
+        mmCtx.fillRect(c*MM_CW, r*MM_CH, MM_CW, MM_CH);
+      }
+    }
+  }
+
+  // ── Powerups ──
+  const pwClr={life:'#44aaff',bonus:'#ffcc00',speed:'#00ff88',slow:'#cc66ff'};
+  for(const pw of powerups){
+    mmCtx.fillStyle=pwClr[pw.type]||'#fff';
+    mmCtx.beginPath();
+    mmCtx.arc(pw.col*MM_CW+MM_CW/2, pw.row*MM_CH+MM_CH/2, MM_CW*1.3,0,Math.PI*2);
+    mmCtx.fill();
+  }
+
+  // ── الأعداء ──
+  for(const e of enemies){
+    const ex=(e.x/CELL)*MM_CW, ey=(e.y/CELL)*MM_CH;
+    if(e.isHunter){
+      // هالة ذهبية للصائد
+      mmCtx.beginPath();
+      mmCtx.arc(ex,ey,MM_CW*2.5,0,Math.PI*2);
+      mmCtx.fillStyle='rgba(255,170,0,0.25)';
+      mmCtx.fill();
+    }
+    mmCtx.beginPath();
+    mmCtx.arc(ex,ey, e.isHunter ? MM_CW*2.0 : MM_CW*1.6, 0,Math.PI*2);
+    mmCtx.fillStyle=e.isHunter?'#ffaa00':'#ff3322';
+    mmCtx.fill();
+    mmCtx.beginPath();
+    mmCtx.arc(ex,ey,MM_CW*.45,0,Math.PI*2);
+    mmCtx.fillStyle='#fff';
+    mmCtx.fill();
+  }
+
+  // ── اللاعب ──
+  if(P&&!P.dying){
+    const px=P.col*MM_CW+MM_CW/2, py=P.row*MM_CH+MM_CH/2;
+    // هالة
+    mmCtx.beginPath();
+    mmCtx.arc(px,py,MM_CW*2.8,0,Math.PI*2);
+    mmCtx.fillStyle='rgba(0,200,255,0.2)';
+    mmCtx.fill();
+    // النقطة الرئيسية
+    mmCtx.beginPath();
+    mmCtx.arc(px,py,MM_CW*1.9,0,Math.PI*2);
+    mmCtx.fillStyle=P.drawing?'#00ff88':'#00ccff';
+    mmCtx.fill();
+    // مركز أبيض
+    mmCtx.beginPath();
+    mmCtx.arc(px,py,MM_CW*.6,0,Math.PI*2);
+    mmCtx.fillStyle='#fff';
+    mmCtx.fill();
+  }
+
+  // ── حدود ──
+  mmCtx.strokeStyle='rgba(255,255,255,0.3)';
+  mmCtx.lineWidth=1;
+  mmCtx.strokeRect(.5,.5,MM_W-1,MM_H-1);
+}
+
+// ═══════════════════════════════════════════
+//  RADAR ARROWS — سهام الأعداء خارج نطاق الكاميرا
+// ═══════════════════════════════════════════
+const radarDiv = document.getElementById('radar');
+let   radarPool = [];   // إعادة استخدام العناصر
+
+// عدد الخلايا المرئية تقريباً في كل اتجاه على الهاتف
+const VIS_C=17, VIS_R=11;
+const EDGE=30; // هامش من حافة الشاشة بالبكسل
+
+function updateRadar(){
+  if(!isMobile()||(gstate!=='playing'&&gstate!=='paused')){
+    radarPool.forEach(el=>el.style.display='none');
+    return;
+  }
+
+  const px=P&&!P.dying?P.col:CX;
+  const pz=P&&!P.dying?P.row:CZ;
+  const sw=window.innerWidth, sh=window.innerHeight;
+
+  // الأعداء خارج نطاق الرؤية
+  const outside=enemies.filter(e=>{
+    const ec=e.x/CELL, er=e.y/CELL;
+    return Math.abs(ec-px)>VIS_C || Math.abs(er-pz)>VIS_R;
+  });
+
+  // توسيع pool إذا لزم
+  while(radarPool.length < outside.length){
+    const el=document.createElement('div');
+    el.className='ra';
+    radarDiv.appendChild(el);
+    radarPool.push(el);
+  }
+  // إخفاء الزائد
+  for(let i=outside.length;i<radarPool.length;i++) radarPool[i].style.display='none';
+
+  outside.forEach((e,i)=>{
+    const el=radarPool[i];
+    const ec=e.x/CELL, er=e.y/CELL;
+    const dx=ec-px, dz=er-pz;
+    const angle=Math.atan2(dz,dx); // راديان
+
+    // نقطة تقاطع الاتجاه مع مستطيل الشاشة
+    const hw=sw/2-EDGE, hh=sh/2-EDGE;
+    const absDx=Math.abs(dx)||0.001, absDz=Math.abs(dz)||0.001;
+    let ax,ay;
+    if(absDx/VIS_C > absDz/VIS_R){
+      ax = dx>0 ? sw-EDGE : EDGE;
+      ay = sh/2 + Math.sign(dz)*Math.min(Math.abs(dz/dx)*hw, hh);
+    }else{
+      ay = dz>0 ? sh-EDGE-90 : EDGE+58;
+      ax = sw/2 + Math.sign(dx)*Math.min(Math.abs(dx/dz)*hh, hw);
+    }
+    ax=Math.max(EDGE,Math.min(sw-EDGE,ax));
+    ay=Math.max(EDGE+55,Math.min(sh-EDGE-90,ay));
+
+    const dist=Math.hypot(dx,dz);
+    const op=Math.max(0.45,Math.min(1,1.2-dist/35));
+    const color=e.isHunter?'#ffaa00':'#ff3322';
+    const icon=e.isHunter?'⚠':'▶';
+
+    el.style.cssText=`
+      left:${ax-12}px;top:${ay-12}px;
+      display:flex;color:${color};
+      opacity:${op.toFixed(2)};
+      transform:rotate(${angle.toFixed(3)}rad);
+    `;
+    el.textContent=icon;
+  });
+}
+
+function loop(){
+  animTime++;update();
+  if(gstate==='playing'||gstate==='paused'){
+    updateTiles();updatePlayerMesh();updateEnemyMeshes();updateParts();updatePowerups();
+    if(flashT>0&&flashMesh){flashMesh.material.opacity=(flashT/flashMax)*.24;flashT--;}
+    else if(flashMesh)flashMesh.material.opacity=0;
+    if(shakeTime>0){
+      if(isMobile()){
+        // هز على الهاتف: نضيف الهز فوق موضع التتبع
+        camTarget.x+=(Math.random()-.5)*shakeAmt;
+        camTarget.z+=(Math.random()-.5)*shakeAmt;
+        camera.position.set(camTarget.x,camTarget.y+(Math.random()-.5)*shakeAmt*.3,camTarget.z);
+      }else{
+        camera.position.x=CX+(Math.random()-.5)*shakeAmt;
+        camera.position.y=36+(Math.random()-.5)*shakeAmt*.4;
+        camera.position.z=ROWS+14+(Math.random()-.5)*shakeAmt;
+      }
+      shakeTime--;shakeAmt*=.88;
+    }else{
+      if(isMobile()){
+        updateCameraFollow();
+      }else{
+        setCameraDefault();
+        camera.lookAt(CX,0,CZ-2);
+      }
+    }
+    clouds.forEach((c,i)=>{c.position.x+=.007*(i%2?1:-1);
+      if(c.position.x>CX+80)c.position.x=CX-80;
+      if(c.position.x<CX-80)c.position.x=CX+80;});
+  }
+  renderer.render(scene,camera);
+  drawMinimap();
+  updateRadar();
+  requestAnimationFrame(loop);
+}
+
+// ── بدء ──
+initGrid();updateTiles();showOnly('sMenu');
+document.getElementById('overlay').classList.remove('hidden');
+// عرض أعلى نقاط محفوظة في القائمة
+document.getElementById('dHigh').textContent=hiScore.toLocaleString();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
