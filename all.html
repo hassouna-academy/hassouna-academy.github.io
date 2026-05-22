@@ -1,448 +1,498 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>جميع الكورسات – Hassouna Academy</title>
+  <script>if(window.self===window.top){window.location.href='index.html?page=all';}</script>
+  <style>
+    body { padding:12px 10px; overflow:hidden !important; }
 
-    <title>All</title>
-    
-    <style>
-        h3 a {
-            font-weight: normal;
-            display: inline-block;
-            margin: 5px;
-            text-decoration: none;
-        }
-    </style>
+    /* ── HERO ── */
+    .all-hero {
+      text-align:center; padding:28px 16px 20px;
+      background: linear-gradient(135deg,rgba(0,200,255,.06),rgba(168,85,247,.05));
+      border:1px solid rgba(0,200,255,.15); border-radius:18px;
+      margin-bottom:20px; position:relative; overflow:hidden;
+    }
+    .all-hero::before {
+      content:''; position:absolute; top:0;left:0;right:0; height:2px;
+      background:linear-gradient(90deg,transparent,#00c8ff,#00ffd0,#a855f7,transparent);
+      background-size:200% 100%; animation:shimmer 3s linear infinite;
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .all-hero h1 {
+      margin:0 0 6px; font-size:clamp(18px,4vw,28px); font-weight:900;
+      background:linear-gradient(135deg,#00c8ff,#00ffd0,#a855f7);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .all-hero p { color:#7e8fa3; font-size:13px; margin:0; }
+    .counter { color:#00c8ff; font-weight:800; font-size:16px; }
 
-    <script>if (window.self === window.top) {window.location.href = 'index.html?page=all';}</script>
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display:flex; gap:8px; flex-wrap:wrap;
+      justify-content:center; margin-bottom:16px;
+    }
+    .tb-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 18px; border-radius:50px; font-size:13px; font-weight:700;
+      cursor:pointer; border:none; font-family:inherit; text-decoration:none;
+      transition:all .3s;
+    }
+    .tb-primary {
+      background:rgba(0,200,255,.1); border:1px solid rgba(0,200,255,.35); color:#00c8ff;
+    }
+    .tb-primary:hover { background:rgba(0,200,255,.18); box-shadow:0 0 16px rgba(0,200,255,.2); transform:translateY(-1px); }
+    .tb-gold {
+      background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.3); color:#fbbf24;
+    }
+    .tb-gold:hover { background:rgba(251,191,36,.15); transform:translateY(-1px); }
 
+    /* ── SEARCH ── */
+    .search-wrap { display:flex; justify-content:center; margin-bottom:20px; }
+    .search-wrap input {
+      width:min(520px,100%); padding:12px 20px 12px 48px;
+      background:rgba(15,25,35,.9); border:1px solid rgba(0,200,255,.2);
+      border-radius:50px; color:#e8f0f8; font-size:14px; font-family:inherit;
+      outline:none; text-align:right; direction:rtl;
+    }
+    .search-wrap input:focus { border-color:#00c8ff; box-shadow:0 0 20px rgba(0,200,255,.12); }
+    .search-wrap input::placeholder { color:#3d4f63; }
 
+    /* ── FILTER TABS ── */
+    .filter-tabs {
+      display:flex; gap:6px; flex-wrap:wrap;
+      justify-content:center; margin-bottom:20px;
+    }
+    .ftab {
+      padding:6px 14px; border-radius:50px; font-size:12px; font-weight:600;
+      border:1px solid rgba(0,200,255,.2); background:transparent;
+      color:#7e8fa3; cursor:pointer; font-family:inherit;
+      transition:all .25s;
+    }
+    .ftab:hover,.ftab.active {
+      background:rgba(0,200,255,.1); border-color:rgba(0,200,255,.5);
+      color:#00c8ff;
+    }
 
+    /* ── CAT BLOCK ── */
+    .cat-block {
+      background:linear-gradient(135deg,#0f1923,#131c2b);
+      border:1px solid rgba(0,200,255,.1);
+      border-radius:14px; margin-bottom:12px; overflow:hidden;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .cat-block:hover { border-color:rgba(0,200,255,.22); box-shadow:0 4px 24px rgba(0,0,0,.4); }
+
+    .cat-head {
+      display:flex; align-items:center; gap:10px;
+      padding:14px 18px; cursor:pointer; user-select:none;
+      background:rgba(0,200,255,.04);
+      border-bottom:1px solid rgba(0,200,255,.08);
+      transition:background .25s;
+    }
+    .cat-head:hover { background:rgba(0,200,255,.08); }
+    .cat-ic { font-size:18px; flex-shrink:0; }
+    .cat-title { flex:1; font-size:14px; font-weight:700; color:#e8f0f8; }
+    .cat-badge {
+      background:rgba(0,200,255,.12); border:1px solid rgba(0,200,255,.28);
+      color:#00c8ff; font-size:11px; font-weight:800;
+      padding:2px 10px; border-radius:20px; flex-shrink:0;
+    }
+    .cat-arrow { color:#7e8fa3; font-size:14px; transition:transform .3s; flex-shrink:0; }
+    .cat-block.collapsed .cat-arrow { transform:rotate(-90deg); }
+
+    .cat-body { padding:12px 14px; display:flex; flex-wrap:wrap; gap:7px; }
+    .cat-block.collapsed .cat-body { display:none; }
+
+    /* ── COURSE LINK ── */
+    .cl {
+      display:inline-flex; align-items:center;
+      padding:7px 13px; border-radius:9px; font-size:13px; font-weight:500;
+      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07);
+      color:#8b949e; text-decoration:none; line-height:1.4;
+      transition:all .22s; position:relative; overflow:hidden;
+    }
+    .cl::before {
+      content:''; position:absolute; right:0; top:0; bottom:0; width:2px;
+      background:#00c8ff; transform:scaleY(0); transition:transform .2s;
+    }
+    .cl:hover {
+      color:#00c8ff; border-color:rgba(0,200,255,.35);
+      background:rgba(0,200,255,.07);
+      transform:translateY(-2px);
+    }
+    .cl:hover::before { transform:scaleY(1); }
+    .cl.hidden { display:none; }
+
+    /* ── NO RESULT ── */
+    .no-result {
+      text-align:center; padding:40px; color:#3d4f63;
+      font-size:15px; display:none;
+    }
+
+    @media(max-width:600px){
+      .all-hero h1 { font-size:17px; }
+      .cat-title { font-size:13px; }
+      .cl { font-size:11px; padding:6px 10px; }
+      .cat-head { padding:11px 12px; }
+      .toolbar { gap:6px; }
+      .tb-btn { padding:8px 14px; font-size:12px; }
+    }
+  </style>
 </head>
-<body style="overflow: hidden !important;">
+<body>
 
-<center>
-    
-    <div >
-    <h1 style="color:#EEE">مقاطع الفيديو لاكاديمية حسونة 🎓 <span id="lblCount"></span></h1>
-    
-    <h3 style="color:#CCC">↓ نوصي بالضغط على زر كيف اتعلم ↓</h3>
-    
-        <!-- START How to learn -->
-        <div style="width:32%;margin:auto;margin-bottom:3px;display:inline-block">
-        <a class="btn btn-info" href="howtolearn.html" dir="rtl" style="width:100%;height:38px;">
-             كيف أتعلم!؟ <span class="glyphicon glyphicon-road"></span>            
-        </a>
-
-        <a class="btn btn-info" onclick="copyAll(this);" dir="rtl" style="cursor: pointer;width:100%;height:38px;">
-             نسخ جميع الكورسات 📃<span class="glyphicon glyphicon-road"></span>            
-        </a>
-
-        </div>
-    
-    <h2 style="color:#1c64ac; display:none">انطلق 💥 لتكتسب المال 💰 واستثمر وقتك 🕐 وتعلم 📕 🖋️ في عالم التكنولوجيا و التطوير و البرمجة 💻 بكل حب ❤️ وسهولة ✈️ مع اكاديمية حسونة بقوة 💪</h2>
-
-    <div class="new-line"></div>
-
-    <!-- #region top-video -->
-
-<div class="container" style="margin:auto;" >
-
-<a style="text-decoration: none;" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjNwfEqFNS9N34vBfHD59n" target="_blank">
-        <p class="my-p v-effect"  dir="rtl" ><span class="txtVid">
-            برمجة القرآن ۩
-            </span><img src="https://i.ytimg.com/vi/qTIz_Rsa8cs/mqdefault.jpg" style="width:320px;height:180px;border:6px solid #067292;border-radius:9px;" />
-            
-        </p>
-</a>
-
-<a style="text-decoration: none;" href="https://www.youtube.com/watch?v=ks31ZKGsr3g&list=PLHIfW1KZRIfl_CtfIfsNT9kfRG-JNBEKr&index=1" target="_blank">
-        <p class="my-p v-effect"  dir="rtl" ><span class="txtVid">
-            تطبيقات الهاتف 📲
-            </span><img src="https://i.ytimg.com/vi/1Tkv0WIMZUk/mqdefault.jpg" style="width:320px;height:180px;border:6px solid #067292;border-radius:9px;" />
-            
-        </p>
-</a>
-
-<a style="text-decoration: none;" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflW0xnD5rw0T6Sa1l0XFkEF" target="_blank">
-    <p class="my-p v-effect"  dir="rtl" ><span class="txtVid">
-        مقاطع مميزة للأعضاء 🎉           <br>
-        </span><img src="https://i.ytimg.com/vi/_mMlkmcS3SY/mqdefault.jpg" style="width:320px;height:180px;border:6px solid #067292;border-radius:9px;" />
-        
-    </p>
-</a> 
-
-    <a style="text-decoration: none;" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfma-_07wzduGu4pTPDgw9G2" target="_blank">
-    <p class="my-p v-effect"  dir="rtl" ><span class="txtVid">
-                تطبيق بنك الأكواد Offline           <br>
-                </span><img src="https://i.ytimg.com/vi/jZFjZy3oQLU/mqdefault.jpg" style="width:320px;height:180px;border:6px solid #067292;border-radius:9px;" />
-                
-            </p>
-    </a>
-
-
-<div style="clear:both"></div>
-
+<div class="all-hero">
+  <h1>🎓 مكتبة كورسات حسونة أكاديمي</h1>
+  <p>إجمالي <span class="counter" id="totalCount">183</span> كورس ورابط موزعة على 20 تصنيف</p>
 </div>
 
-<!-- #endregion top-video -->
-
-
-<!-- #region mob-app -->
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات تطبيقات الهاتف الذكي Mob App - برامج الموبايل</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl_CtfIfsNT9kfRG-JNBEKr">كورس تطبيقات Android و iOS و macOS و WinUI تقنية ماوي لغة سي شارب C#</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk1LxfU4pFr-lqS_LSUggOx">كورس ماوي المجاني لغة سي شارب C#</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnVz8JkeyAyJ4izuNjPPJh1">كورس Dart و Flutter 📲</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnQ6WRvLbWok4ZZww4k3T1u">كورس اندرويد مع اللغة الرائعة جافا</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmbpu6cVCxo98u_Yk0Hfxah">كورس اندرويد مع اللغة الرائعة كوتلن</a></h3>
-<!-- #endregion mob-app -->
-
-<!-- #region members-courses -->
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات حصرية للأعضاء ⭐</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflj9zMCRTa7OuMw3uH7nPjC">كورس الويب الجديد الحصري للأعضاء</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmlJDwGbIpoa4s8qOjirsfL">كورس قواعد بيانات الأعضاء</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn0n5SUqwPTBjSR32HV0FXG">عمق انظمة التشغيل</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflW0xnD5rw0T6Sa1l0XFkEF">مقاطع متنوعة ومميزة للأعضاء</a></h3>
-<!-- #endregion members-courses -->
-
-<!-- #region ide-and-tools -->
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">تنزيل ادوات التطوير IDE and Developer Tools</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmEGNgh064QZdILumiY4tE3">فيجوال ستوديو ♾️ و فيجوال ستويديو كود vsCode</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnFX3SG1S0JcY3PIFAVwywh">تنزيل ادوات ماوي Multi-Platform لجميع الأنظمة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjaBmeiHTqAqqLrVP9qlpK">تنزيل ادوات تطوير متنوعة IDE(s)</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkuejsVZhURNtdpA_NY2cWc">تنزيل ادوات تطوير dotNET لكل الانظمة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm56LJkqMERdlHc52jyfFoc">تنزيل وازالة اوراكل Oracle Database</a></h3>
-<!-- #endregion ide-and-tools -->
-
-<!-- #region special-love -->
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">دورات لمن يحب الكمبيوتر والبرمجة والالكترونيات</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflE7OxFw6kKVoRBc51Hr_vU">البرمجة العميقة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmDx1ATI8-JgjpuHUY8ieGa">دورة خبرات 11 لغة برمجة دفعة واحدة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm35onxEsQ1dsJ7AylDyFFT">مقارنات تقنية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflKOEa59IIURHw0ColnMXbx">دورة خبرات الدوس او الـ Terminal او الـ PowerShell</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnONG0BIv88KtbTSOOvcm63">دورة التدريب على حل المشاكل البرمجية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflc3i4pMPo4FSAGgO2fhEEg">دورة Problem Solving</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflqZVtIaTBfVFL7EJu-3evj">دورة يلا نذاكر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnzZkmY9Jl2xOqOkpBTbIS7">دورة فهمني صح</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk7pYIWi02bUDmKrPjW3jxl">اختراعات و الكترونيات و تجارب</a></h3>
-    
-<!-- #endregion special-love -->
-
-    <!-- #region os-and-cpm -->
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">المعلومات و الكمبيوتر و نظم التشغيل والتكنولوجيا</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN">صيانة الحاسب وخبرات تقنية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflhhADTX3zPxGbRgQdc4TQ3">الذكاء الاصطناعي 🤖⚛🤖</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=LFZRTjr8zME&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M&index=2">برنامج نوت باد الجديد</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnSrZjBP7lQK46qF5KOU88p">دورة معلومة في اقل من دقيقة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkKu8K8Dz603sxLa3eQ-g6G">شرح مفصل و احترافي لنظام التشغيل ويندوز Windows</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm1naesBFuKbNYQOflmUlkW">تنزيل جميع اصدارات ويندوز</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkZiKzUwfMkWHbw5csInp3-">انظمة التشغيل و اجهزة وهمية بالتفصيل 👻 Virtual Machine</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkB1A485EuGbo3HlMBcSEWu">بديل اوفيس المجاني</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkossHF5EWpYSFUeGXd5tx_">صناعة خطوط النظام 𝛼ΑαΒβΓγ𝛼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk_q1_xWEJ8gl_nbPY_Y75A">تعلم Word بالعربي 📕 بإيجاز 🖋️ و قوة 💪</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmeaZUramzmRwJVLQThBiuu">تعلم Excel بالعربي 📕 بإيجاز 🖋️ و مهارة 💍</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvbwQMS0XOcbcvq5Qn1ovy">تعليم باور بوينت Power Point</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnKpy1msMUPqVYdpu3nOdkY">تعليم اكسس Access</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=57vQcdc7pvw&list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&index=1&pp=iAQB">مايكروسوفت ويندوز في فيديو واحد 📼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=E6zibGgC6l0&list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&index=2&pp=iAQB">مايكروسوفت وورد في فيديو واحد 📼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=kOF2_JD-9EE&list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&index=3&pp=iAQB0gcJCc4JAYcqIYzv">مايكروسوفت اكسيل في فيديو واحد 📼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=H-DLHNuHrI8&list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&index=4&pp=iAQB">مايكروسوفت باوربوينت في فيديو واحد 📼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=CXnPPUQ_f0E&list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&index=5&pp=iAQB">مايكروسوفت اكسس في فيديو واحد 📼</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=Bgh079MdcHA&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=1">تنزيل ويندوز 10 الحديث</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=4vRW6jdsFnc&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=1">تنزيل ويندوز 10</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=RBelJYz0g4g&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=2">شرح استرجاع الملفات المحذوفة مع برنامج Recover My Files مع تجربة عملية فعلية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmTj0gddZTgcPdqDGP1qscF">شرح تنزيل نظام لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkN4KSPFilqr0VdBEcU5ugo">شرح في عالم لينكس</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm8TMnlm_HZlbxrorAejvPh">شرح في عالم ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmt3FFalD6y-UjTshUC_zXM">CS500 مقدمة في الحاسب الآلي و اسرار</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=AhuLgbwexgk&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=2">احمي نفسك من الفيرس</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=sGeQymoz40U&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=3">استرجاع الملفات من الهارد</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=gRUiNL6eZdk&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=4">عمل بووت بسهولة لجميع الانظمة ويندوز و لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=5qgbFmpkIAA&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=5">تنزيل ويندوز 8</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=j7KqySFMVvY&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=6">تنزيل ويندوز 7</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=LMxvzKf7OIA&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=8">تنزيل الدوت نت فريم وورك 3.5 علي ويندوز 8 و 10 لتشغيل الالعاب والبرامج القديمة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=d6ofBe_f7sc&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=9">عمل نسخة احتياطية ساحرة من الهارد</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=g_StLTcObRg&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=10">تقسيم الهارد بطريقة صحيحة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=7oZUSvUX89M&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=12">تنزيل ويندوز من الفلاشة USB</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=tNW2NYnTPmM&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=13">انشاء جهاز وهمي علي جهازك</a></h3>
-
-    <!-- #endregion os-and-cpm -->        
-
-    
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">مقاطع مفيده</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkpiqNWrTJtJDyfmjujoDli">عروض برامج اعضاء حسونة اكاديمي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmB70NduXj-RFnUQqZ6sfdP">بث مباشر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflzQppYq0Yi4LekfCaIBh3p">فهم انتاج البرامج في قصة جميلة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvUNrnmYsLPbU2t4oG0P-8">قصص نجاح</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnLcjFtaI9O5vt1DKdSVM4K">برنامج المبرمجتية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflppXbTqLj4qwu1BH6F31zo">برمجة بدون لغة ولا كود</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnC8r7tNRbFOshbiH7PgcYV">برنامج جاوبني تكنولوجي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmFsmWKCbc_rf6qAPbVykMJ">لقاءات و احداث Events</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl0CJzVbN-DHGUJ_Y2DpPim">دردشة برمجة عملي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl_KgeClVL_xH_JXFqIsV0Y">كلام و معلومات حول لغة البرمجة كوتلن</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkmYNHACnfnI9tJxrWjVHwP">كيف أذاكر من الفيديوهات 👨🏻‍🎓</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmAniWh0R2PofZgWy70yI-l">فقط لمن يشرح للناس 🧑‍🏫</a></h3>
-
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">جرافيك وتصميم ومونتاج</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfntLWyOJQKyfR5RcuXdzfnU">ادوبي فوتوشوب وتصميم الصور</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmoeP7rnPYhXpR-Cnew4ois">ادوبي اليستريتور والفيكتور</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkUfKKb7Qhi9Ko5AGbLN-py">ادوبي بريمير والمونتاج والدوبلاج</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfneZzVSo84DuwnyP9ieYt8K">احتراف الـ SVG بالكود</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnu5AX-oady_ZsxxMCfVn2N">جرافيك و مونتاج - سلسلة تعليم الفيديو الواحد</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات شهادات</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflXwW-PhVWsiyiJAa2HwhqE">جافا JAVA OCA</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">تصميم التقارير</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfktmjtwVGZCbX_G7rJKOA5Y">اعدادات التقارير الكاملة مع كريستال ريبورت</a></h3>
-    
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات عملاقة</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn9BnepQuzWiM_ZPIwUDawL">جافا JAVA من البداية الي الاحتراف</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkDF2xTIB5kX8gdthmLTufx">سي شارب من البداية الي الاحتراف</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmLGhFsQ1G5cPv1xokzBsbT">فيجوال بيسك من البداية الي الاحتراف</a></h3>
-        <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnM9y0sQRwjVz2-IwvnEJep">بايثون من البداية الي الاحتراف</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6KzfLziFl650MmThnQ0jT">رينج من البداية الي الاحتراف</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">للمبرمجين المحترفين</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkqDJJepOL5_lsmYS5j5TBb">خبرات برمجية للمحترفين</a></h3>
-    
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">تحليل البيانات و قواعد البيانات</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmlJDwGbIpoa4s8qOjirsfL">كورس قواعد بيانات الأعضاء</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk-9tUSWTcM23lgnoAlRmMZ">قواعد بيانات اوراكل</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflAus00vgdVEzLUBCx8ooH_">كورس قواعد البيانات و السي شارب - جميع قواعد البيانات</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflwIO8IiPxNkSSb-ezkNqDs">الخوارزميات و خرائط التدفق</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmOvX3-91zteoSP-b0VS44o">الخوارزميات و خرائط التدفق 2</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkDoNSoObO0s_OZn67DFAti">تحليل البيانات</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflO4GPp9vMtUgry-xAQKl7i">ماي سكول</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmNd2URuqVO5Itboj_LQyrx">لغة سكول</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvUe-YfDpIqqnU70BopQ3q">مايكروسوفت سكول سيرفر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmMYvE8mnEH4VT-4v21XV6p">شرح ملتيميديا داتا بيز IS502</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmg0C_6ON0IRFWrifni6CTq">كورس قواعد البيانات الشامل و البرنامج المتكامل</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات اساسيات لغات البرمجة</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflflvzYY7B1d5CJjXpbIriU">جافا اساسيات من البداية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmb25mVAsCJy_Ehgu5rbbQx">جافا و التمهيد للبرمجة الكائنية التوجه OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnT2i7Ba4F2nrWb_ENXjyTs">جافا و البرمجة كائنية التوجه OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm8nQAoJF5u2aV43tMRAAmr">اساسيات سي شارب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6UP-PlUli03pokSc4af2S">سي شارب و البرمجة كائنية التوجه OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmm35tXSbxsFDouRJAPP9Y2">اساسيات بايثون</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmHvfmFZZ0XuzZYuoosG9kl">بايثون و البرمجة كائنية التوجه OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflKvIMpDSgFTJsR_IO1dH9i">اساسيات فيجوال بيسك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkJwYrBR5DJOs2F33R90H7g">فيجوال بيسك و البرمجة كائنية التوجه OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6KzfLziFl650MmThnQ0jT">اساسيات لغة رينج من البداية</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl5TA4nTIIVWsfDyVwIBP6y">اساسيات OOP في لغة رينج</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl5UHtM6DRFAVn3PBuJ7NGD">اساسيات لغة البرمجة كوتلن و الـ OOP</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkz_N9aNWXRByEJOudCxSRh">البداية مع سي بلس بلس</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflPoGDzHxFW5sDadboQ08Vd">كورس السي و سي بلس بلس</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl3ft6CfBTjopDFgWYXUJpa">برمجة - سلسلة تعليم الفيديو الواحد</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات الويب</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflHjdhHZ8amYWkgApTQskVY">Web 🌐 هام جدا لأي مطور ويب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflj9zMCRTa7OuMw3uH7nPjC">كورس الويب الجديد الحصري للأعضاء</a></h3>
-    <h3><a target="_blank" href="https://youtu.be/saHJ4NjeZPY">ما معني Full Stack Developer</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn1cs2BupsdJ7dzCQ7wmHFk">تصميم و رفع موقع انترنت باستخدام رينج</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnYEkYsNi5XJLI57OWMKBjM">تصميم موقع ويب كامل باستخدام جانجو و بايثون</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflYXyXHNiG-hyyVaz7-9ujn">دبلومة الويب الكاملة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflNE0g4ycrEgoB4574YKG3U">دبلومة الويب Front End</a></h3>
-    <h3><a target="_blank" href="https://youtu.be/Z26aSwKkdf4">HTML, CSS, JavaScript, J-Query, Bootstrap في فيديو واحد</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmpHW37aNxMFosXD_p1jQz0">شرح قديم في HTML</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnXKjZ9UcT5BVt9x19BlItX">اسرع كورس في HTML</a></h3>
-    <h3><a target="_blank" href="https://youtu.be/KRiq7Eqfe-Q">شرح صخرة الاساس في HTML</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflO6xnz4jpmzzSuo5B63aJf">كورس لغة سي اس اس CSS للويب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkJzvWATr3oQ8mrVrTUqZ7K">شرح صخرة الاساس في CSS</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfneZzVSo84DuwnyP9ieYt8K">شرح صخرة الاساس في SVG</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmiYYwt29BG7N9zzsd-jLRQ">كورس جافا سكريبت</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkfITD_tTWR7S1ZLE54om9L">ورشة عمل جافا سكريبت</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmi8jwSbqiQuVfxeXIBk-bW">جميع ادوات صفحات الويب مع تقنية ASP .NET</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkYSpySS9Czt3Dxx2rsvqcN">تصميم و برمجة الة حاسبة للويب - افهم حقيقة اللغات HTML , CSS , JS</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfll3ObMFi02Ry7oRU3MJVRG">كورس j-Query</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmzBcYnuLNrmdLxYCDzJgQi">كورس Bootstrap بوتستراب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn3efr_n7Kku8Znu8sGDYPu">في فيديو واحد وموقع كامل Bootstrap بوتستراب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmPDQahhTDdd1DJ4PwQl3pC">كورس بي اتش بي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflA5jVQbAAHVizSxoeOAtgq">كورس جاسون</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflbtKBrCp5U2UdbeV1c7F-5">كورس انجولار</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnPUohWz2vPjm0obEjzZJD8">ويب - سلسلة تعليم الفيديو الواحد</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmYd8YFZtSmCzc3hcZXVua9">دروس AJAX</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=ZC2MnsmRMGk&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=2">عرض البيانات في الويب وتعديلها في جريد بسهولة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn6kI3NyvzTDm-wdw9EX7D6">بناء موقع تجاري متكامل باستخدام السي شارب وتقنية ASP.NET - شرح تنفيذي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkoJK8bEZyNsBfmzApb0gH0">دروس كثيرة في عالم الويب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflkDPHlOLTKV1daEp4pvIgA">شرح عن لغة سي شارب وتقنية ASP.NET وموقع الويب</a></h3>
-    
-    
-
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">كورسات برامج الكمبيوتر</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjNwfEqFNS9N34vBfHD59n">برمجة القرآن ۩</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfma-_07wzduGu4pTPDgw9G2">تطبيق بنك الأكواد Offline</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnKQjOoZc540z3fmGe-slLU">جافا - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmMhy8GltKHW5UJ_ZPnGJ0K">بايثون - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmE8gCtJQpIOGmBz3bc_Nrs">رينج - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك و اندرويد و ايفون و الويب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnUMvey6UAveK5msn8L_ulS">انشاء برامج بلغة جافا - امثلة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl2XxZwryDuPO5ZLkRhL-CS">ادوات جافا سوينج تعمل علي ويندوز و لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl0vnBDg28R0DW9HBkyHvc-">عمل برنامج متكامل بالتقارير - سي شارب و اوراكل</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnbNoGB0NdoRdllq9fdo6uM">ادوات سي شارب تعمل علي ويندوز</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkdbHPdTBpcYZzPQtPUeR7I">عمل برنامج متكامل بالتقارير بفيجوال بيسك و اكسس</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkkhf3ha77qccAWYMvgM7LR">اعداد تقارير مع كريستال ريبورت و فيجوال بيسك دوت نت و سكول سيرفر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn7Pz7MnzABWryuHRP9ab7O">ادوات فيجوال بيسك تعمل علي ويندوز</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmE8gCtJQpIOGmBz3bc_Nrs">ادوات رينج Qt تعمل علي ويندوز و لينكس و ماك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflAkiMFHY-0Jc_XXnpLWQO0">عمل برنامج متكامل بالتقارير - فيجوال بيسك و اوراكل</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl7ToU9EDuRVYiki9C9wxnJ">انشاء متصفح ويب باستخدام لغة سي شارب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=NMXn8s-GQ7Q&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=7">انشاء برنامج سريع سي شارب و سكول سيرفر جزء اول</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=ODTO1vSjJvw&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=8">انشاء برنامج سريع سي شارب و سكول سيرفر جزء ثاني</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=nXjSpfwKhqA&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=14">انشاء برنامج سريع فيجوال بيسك و اكسس جزء اول</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=T8ejqewbnNc&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=15">انشاء برنامج سريع فيجوال بيسك و اكسس جزء ثاني</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7">شرح عام فى البرمجة</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnK119pOw2oEDXc0AEpIfd5">انشاء برنامج الطعام</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm2vgnbTfoxoUSlxoag0UHX">انشاء برنامج المبيعات</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">شرح عام في البرمجة</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=9UMtPbvFXGw&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=1">تغيير شكل البرنامج لاي برنامج</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=9gIeG1HpGVw&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=5">توليد ارقام عشوائية بدون تكرار في سي شارب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=BXHDg_4AiAk&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=6">توليد ارقام عشوائية بدون تكرار في فيجوال بيسك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=xlObql2oCTA&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=3">انشاء شاشة بالكود مع سي شارب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=mIDIx-qQWYg&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=4">انشاء شاشة بالكود مع فيجوال بيسك</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=pm7G9np2JAg&list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&index=11">انشاء برنامج بدون قاعدة بيانات معتمد على XML</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnDa6squg4OjDjYfx5YC8Zx">طرق تحويل ملف الجار الي ملف تنفيذي ويندوز</a></h3>
-    
-    <div class="new-line"></div>
-
-
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">ادوات و برامج جاهزة لمساعدة المبرمجين و المطورين</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjNwfEqFNS9N34vBfHD59n">برنامج القرآن مفتوح المصدر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=ZgS6L31GvXY&index=4&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">نتيجة التاريخ الهجري مع الميلادي مفتوح المصدر</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnkb0hIry8E0LbA0flhaXTo">الاداة الساحرة Magic DB</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=eqjcA3v7WGU&index=2&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">برنامج رسم خرائط التدفق بالعربي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=H7gNz-e0oXQ&index=1&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">برنامج رسم خرائط التدفق بالانجليزي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=xiCqYmb10FU&index=6&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">برنامج برنت سكرين احترافي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=goWoeY2jGWc&index=8&list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">ادارة صلاحيات المستخدمين</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M">برامج جاهزة</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">مناهج دراسية في مصر</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmkYyJx1FJcSx1QOJnHanpQ">حاسب الى الصف الثانى الاعدادى الترم الاول</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmM2mbNfA_4jTI3vyK4iCOE">حاسب الى الصف الثالث الاعدادى الترم الاول</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">برامج للبيع</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnd5v0u8hxwTKXebJK9QpqG">برنامج امتحان الطلاب</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn502dDJdsvN_s_b4DTi-64">برامج للبيع</a></h3>
-    
-    <div class="new-line"></div>
-    <h2 style="color:#EEE">دروس قديمة</h2>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=HsGdckRQi14&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=7">تنزيل وندوز اكس بي</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk5L0DQbV8DyUwfoAhQyieg">دروس فيجوال بيسك 6 القديم</a></h3>
-    <h3><a target="_blank" href="https://www.youtube.com/watch?v=zC6er7HNhek&list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&index=11">عمل جهاز وهمي ببرنامج قديم</a></h3>
-    
+<div class="toolbar">
+  <a class="tb-btn tb-primary" target="formain" href="howtolearn.html">🧮 كيف أتعلم؟</a>
+  <button class="tb-btn tb-primary" onclick="toggleAll(true)">📂 فتح الكل</button>
+  <button class="tb-btn tb-primary" onclick="toggleAll(false)">📁 طي الكل</button>
+  <button class="tb-btn tb-gold" onclick="copyAll(this)">📋 نسخ جميع الروابط</button>
 </div>
 
-</center>
+<div class="search-wrap">
+  <input type="text" id="searchInput" placeholder="🔍  ابحث في أكثر من 183 كورس..." oninput="doSearch(this.value)">
+</div>
+
+<div class="filter-tabs" id="filterTabs">
+  <button class="ftab active" onclick="filterCat('all',this)">الكل</button>
+  <button class="ftab" onclick="filterCat('📱',this)">📱 تطبيقات</button>
+  <button class="ftab" onclick="filterCat('⭐',this)">⭐ أعضاء</button>
+  <button class="ftab" onclick="filterCat('🌐',this)">🌐 ويب</button>
+  <button class="ftab" onclick="filterCat('💻',this)">💻 لغات</button>
+  <button class="ftab" onclick="filterCat('🗄️',this)">🗄️ قواعد بيانات</button>
+  <button class="ftab" onclick="filterCat('🖥️',this)">🖥️ كمبيوتر</button>
+  <button class="ftab" onclick="filterCat('🎨',this)">🎨 جرافيك</button>
+  <button class="ftab" onclick="filterCat('🚀',this)">🚀 عملاقة</button>
+</div>
+
+<div id="catContainer">
+
+<div class="cat-block" data-title="كورسات تطبيقات الهاتف الذكي Mob App - برامج الموبايل">
+  <div class="cat-head">
+    <span class="cat-ic">📱</span>
+    <span class="cat-title">كورسات تطبيقات الهاتف الذكي Mob App - برامج الموبايل</span>
+    <span class="cat-badge">5</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl_CtfIfsNT9kfRG-JNBEKr" target="_blank">كورس تطبيقات Android و iOS و macOS و WinUI تقنية ماوي لغة سي شارب C#</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk1LxfU4pFr-lqS_LSUggOx" target="_blank">كورس ماوي المجاني لغة سي شارب C#</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnVz8JkeyAyJ4izuNjPPJh1" target="_blank">كورس Dart و Flutter 📲</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnQ6WRvLbWok4ZZww4k3T1u" target="_blank">كورس اندرويد مع اللغة الرائعة جافا</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmbpu6cVCxo98u_Yk0Hfxah" target="_blank">كورس اندرويد مع اللغة الرائعة كوتلن</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات حصرية للأعضاء ⭐">
+  <div class="cat-head">
+    <span class="cat-ic">⭐</span>
+    <span class="cat-title">كورسات حصرية للأعضاء ⭐</span>
+    <span class="cat-badge">4</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflj9zMCRTa7OuMw3uH7nPjC" target="_blank">كورس الويب الجديد الحصري للأعضاء</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmlJDwGbIpoa4s8qOjirsfL" target="_blank">كورس قواعد بيانات الأعضاء</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn0n5SUqwPTBjSR32HV0FXG" target="_blank">عمق انظمة التشغيل</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflW0xnD5rw0T6Sa1l0XFkEF" target="_blank">مقاطع متنوعة ومميزة للأعضاء</a>
+  </div>
+</div>
+<div class="cat-block" data-title="تنزيل ادوات التطوير IDE and Developer Tools">
+  <div class="cat-head">
+    <span class="cat-ic">🔧</span>
+    <span class="cat-title">تنزيل ادوات التطوير IDE and Developer Tools</span>
+    <span class="cat-badge">5</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmEGNgh064QZdILumiY4tE3" target="_blank">فيجوال ستوديو ♾️ و فيجوال ستويديو كود vsCode</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnFX3SG1S0JcY3PIFAVwywh" target="_blank">تنزيل ادوات ماوي Multi-Platform لجميع الأنظمة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjaBmeiHTqAqqLrVP9qlpK" target="_blank">تنزيل ادوات تطوير متنوعة IDE(s)</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkuejsVZhURNtdpA_NY2cWc" target="_blank">تنزيل ادوات تطوير dotNET لكل الانظمة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm56LJkqMERdlHc52jyfFoc" target="_blank">تنزيل وازالة اوراكل Oracle Database</a>
+  </div>
+</div>
+<div class="cat-block" data-title="دورات لمن يحب الكمبيوتر والبرمجة والالكترونيات">
+  <div class="cat-head">
+    <span class="cat-ic">💡</span>
+    <span class="cat-title">دورات لمن يحب الكمبيوتر والبرمجة والالكترونيات</span>
+    <span class="cat-badge">9</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflE7OxFw6kKVoRBc51Hr_vU" target="_blank">البرمجة العميقة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmDx1ATI8-JgjpuHUY8ieGa" target="_blank">دورة خبرات 11 لغة برمجة دفعة واحدة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm35onxEsQ1dsJ7AylDyFFT" target="_blank">مقارنات تقنية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflKOEa59IIURHw0ColnMXbx" target="_blank">دورة خبرات الدوس او الـ Terminal او الـ PowerShell</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnONG0BIv88KtbTSOOvcm63" target="_blank">دورة التدريب على حل المشاكل البرمجية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflc3i4pMPo4FSAGgO2fhEEg" target="_blank">دورة Problem Solving</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflqZVtIaTBfVFL7EJu-3evj" target="_blank">دورة يلا نذاكر</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnzZkmY9Jl2xOqOkpBTbIS7" target="_blank">دورة فهمني صح</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk7pYIWi02bUDmKrPjW3jxl" target="_blank">اختراعات و الكترونيات و تجارب</a>
+  </div>
+</div>
+<div class="cat-block" data-title="المعلومات و الكمبيوتر و نظم التشغيل والتكنولوجيا">
+  <div class="cat-head">
+    <span class="cat-ic">🖥️</span>
+    <span class="cat-title">المعلومات و الكمبيوتر و نظم التشغيل والتكنولوجيا</span>
+    <span class="cat-badge">35</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN" target="_blank">صيانة الحاسب وخبرات تقنية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflhhADTX3zPxGbRgQdc4TQ3" target="_blank">الذكاء الاصطناعي 🤖⚛🤖</a><a class="cl" href="https://www.youtube.com/watch?v=LFZRTjr8zME&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M&amp;index=2" target="_blank">برنامج نوت باد الجديد</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnSrZjBP7lQK46qF5KOU88p" target="_blank">دورة معلومة في اقل من دقيقة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkKu8K8Dz603sxLa3eQ-g6G" target="_blank">شرح مفصل و احترافي لنظام التشغيل ويندوز Windows</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm1naesBFuKbNYQOflmUlkW" target="_blank">تنزيل جميع اصدارات ويندوز</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkZiKzUwfMkWHbw5csInp3-" target="_blank">انظمة التشغيل و اجهزة وهمية بالتفصيل 👻 Virtual Machine</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkB1A485EuGbo3HlMBcSEWu" target="_blank">بديل اوفيس المجاني</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkossHF5EWpYSFUeGXd5tx_" target="_blank">صناعة خطوط النظام 𝛼ΑαΒβΓγ𝛼</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk_q1_xWEJ8gl_nbPY_Y75A" target="_blank">تعلم Word بالعربي 📕 بإيجاز 🖋️ و قوة 💪</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmeaZUramzmRwJVLQThBiuu" target="_blank">تعلم Excel بالعربي 📕 بإيجاز 🖋️ و مهارة 💍</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvbwQMS0XOcbcvq5Qn1ovy" target="_blank">تعليم باور بوينت Power Point</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnKpy1msMUPqVYdpu3nOdkY" target="_blank">تعليم اكسس Access</a><a class="cl" href="https://www.youtube.com/watch?v=57vQcdc7pvw&amp;list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&amp;index=1&amp;pp=iAQB" target="_blank">مايكروسوفت ويندوز في فيديو واحد 📼</a><a class="cl" href="https://www.youtube.com/watch?v=E6zibGgC6l0&amp;list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&amp;index=2&amp;pp=iAQB" target="_blank">مايكروسوفت وورد في فيديو واحد 📼</a><a class="cl" href="https://www.youtube.com/watch?v=kOF2_JD-9EE&amp;list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&amp;index=3&amp;pp=iAQB0gcJCc4JAYcqIYzv" target="_blank">مايكروسوفت اكسيل في فيديو واحد 📼</a><a class="cl" href="https://www.youtube.com/watch?v=H-DLHNuHrI8&amp;list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&amp;index=4&amp;pp=iAQB" target="_blank">مايكروسوفت باوربوينت في فيديو واحد 📼</a><a class="cl" href="https://www.youtube.com/watch?v=CXnPPUQ_f0E&amp;list=PLHIfW1KZRIfnPjzWQ2jBYTsHPACK6-e4V&amp;index=5&amp;pp=iAQB" target="_blank">مايكروسوفت اكسس في فيديو واحد 📼</a><a class="cl" href="https://www.youtube.com/watch?v=Bgh079MdcHA&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=1" target="_blank">تنزيل ويندوز 10 الحديث</a><a class="cl" href="https://www.youtube.com/watch?v=4vRW6jdsFnc&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=1" target="_blank">تنزيل ويندوز 10</a><a class="cl" href="https://www.youtube.com/watch?v=RBelJYz0g4g&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=2" target="_blank">شرح استرجاع الملفات المحذوفة مع برنامج Recover My Files مع تجربة عملية فعلية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmTj0gddZTgcPdqDGP1qscF" target="_blank">شرح تنزيل نظام لينكس و ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkN4KSPFilqr0VdBEcU5ugo" target="_blank">شرح في عالم لينكس</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm8TMnlm_HZlbxrorAejvPh" target="_blank">شرح في عالم ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmt3FFalD6y-UjTshUC_zXM" target="_blank">CS500 مقدمة في الحاسب الآلي و اسرار</a><a class="cl" href="https://www.youtube.com/watch?v=AhuLgbwexgk&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=2" target="_blank">احمي نفسك من الفيرس</a><a class="cl" href="https://www.youtube.com/watch?v=sGeQymoz40U&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=3" target="_blank">استرجاع الملفات من الهارد</a><a class="cl" href="https://www.youtube.com/watch?v=gRUiNL6eZdk&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=4" target="_blank">عمل بووت بسهولة لجميع الانظمة ويندوز و لينكس و ماك</a><a class="cl" href="https://www.youtube.com/watch?v=5qgbFmpkIAA&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=5" target="_blank">تنزيل ويندوز 8</a><a class="cl" href="https://www.youtube.com/watch?v=j7KqySFMVvY&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=6" target="_blank">تنزيل ويندوز 7</a><a class="cl" href="https://www.youtube.com/watch?v=LMxvzKf7OIA&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=8" target="_blank">تنزيل الدوت نت فريم وورك 3.5 علي ويندوز 8 و 10 لتشغيل الالعاب والبرامج القديمة</a><a class="cl" href="https://www.youtube.com/watch?v=d6ofBe_f7sc&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=9" target="_blank">عمل نسخة احتياطية ساحرة من الهارد</a><a class="cl" href="https://www.youtube.com/watch?v=g_StLTcObRg&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=10" target="_blank">تقسيم الهارد بطريقة صحيحة</a><a class="cl" href="https://www.youtube.com/watch?v=7oZUSvUX89M&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=12" target="_blank">تنزيل ويندوز من الفلاشة USB</a><a class="cl" href="https://www.youtube.com/watch?v=tNW2NYnTPmM&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=13" target="_blank">انشاء جهاز وهمي علي جهازك</a>
+  </div>
+</div>
+<div class="cat-block" data-title="مقاطع مفيده">
+  <div class="cat-head">
+    <span class="cat-ic">▶️</span>
+    <span class="cat-title">مقاطع مفيده</span>
+    <span class="cat-badge">12</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkpiqNWrTJtJDyfmjujoDli" target="_blank">عروض برامج اعضاء حسونة اكاديمي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmB70NduXj-RFnUQqZ6sfdP" target="_blank">بث مباشر</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflzQppYq0Yi4LekfCaIBh3p" target="_blank">فهم انتاج البرامج في قصة جميلة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvUNrnmYsLPbU2t4oG0P-8" target="_blank">قصص نجاح</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnLcjFtaI9O5vt1DKdSVM4K" target="_blank">برنامج المبرمجتية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflppXbTqLj4qwu1BH6F31zo" target="_blank">برمجة بدون لغة ولا كود</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnC8r7tNRbFOshbiH7PgcYV" target="_blank">برنامج جاوبني تكنولوجي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmFsmWKCbc_rf6qAPbVykMJ" target="_blank">لقاءات و احداث Events</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl0CJzVbN-DHGUJ_Y2DpPim" target="_blank">دردشة برمجة عملي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl_KgeClVL_xH_JXFqIsV0Y" target="_blank">كلام و معلومات حول لغة البرمجة كوتلن</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkmYNHACnfnI9tJxrWjVHwP" target="_blank">كيف أذاكر من الفيديوهات 👨🏻‍🎓</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmAniWh0R2PofZgWy70yI-l" target="_blank">فقط لمن يشرح للناس 🧑‍🏫</a>
+  </div>
+</div>
+<div class="cat-block" data-title="جرافيك وتصميم ومونتاج">
+  <div class="cat-head">
+    <span class="cat-ic">🎨</span>
+    <span class="cat-title">جرافيك وتصميم ومونتاج</span>
+    <span class="cat-badge">5</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfntLWyOJQKyfR5RcuXdzfnU" target="_blank">ادوبي فوتوشوب وتصميم الصور</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmoeP7rnPYhXpR-Cnew4ois" target="_blank">ادوبي اليستريتور والفيكتور</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkUfKKb7Qhi9Ko5AGbLN-py" target="_blank">ادوبي بريمير والمونتاج والدوبلاج</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfneZzVSo84DuwnyP9ieYt8K" target="_blank">احتراف الـ SVG بالكود</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnu5AX-oady_ZsxxMCfVn2N" target="_blank">جرافيك و مونتاج - سلسلة تعليم الفيديو الواحد</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات شهادات">
+  <div class="cat-head">
+    <span class="cat-ic">🏆</span>
+    <span class="cat-title">كورسات شهادات</span>
+    <span class="cat-badge">1</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflXwW-PhVWsiyiJAa2HwhqE" target="_blank">جافا JAVA OCA</a>
+  </div>
+</div>
+<div class="cat-block" data-title="تصميم التقارير">
+  <div class="cat-head">
+    <span class="cat-ic">📊</span>
+    <span class="cat-title">تصميم التقارير</span>
+    <span class="cat-badge">1</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfktmjtwVGZCbX_G7rJKOA5Y" target="_blank">اعدادات التقارير الكاملة مع كريستال ريبورت</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات عملاقة">
+  <div class="cat-head">
+    <span class="cat-ic">🚀</span>
+    <span class="cat-title">كورسات عملاقة</span>
+    <span class="cat-badge">5</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn9BnepQuzWiM_ZPIwUDawL" target="_blank">جافا JAVA من البداية الي الاحتراف</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkDF2xTIB5kX8gdthmLTufx" target="_blank">سي شارب من البداية الي الاحتراف</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmLGhFsQ1G5cPv1xokzBsbT" target="_blank">فيجوال بيسك من البداية الي الاحتراف</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnM9y0sQRwjVz2-IwvnEJep" target="_blank">بايثون من البداية الي الاحتراف</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6KzfLziFl650MmThnQ0jT" target="_blank">رينج من البداية الي الاحتراف</a>
+  </div>
+</div>
+<div class="cat-block" data-title="للمبرمجين المحترفين">
+  <div class="cat-head">
+    <span class="cat-ic">👨‍💻</span>
+    <span class="cat-title">للمبرمجين المحترفين</span>
+    <span class="cat-badge">1</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkqDJJepOL5_lsmYS5j5TBb" target="_blank">خبرات برمجية للمحترفين</a>
+  </div>
+</div>
+<div class="cat-block" data-title="تحليل البيانات و قواعد البيانات">
+  <div class="cat-head">
+    <span class="cat-ic">🗄️</span>
+    <span class="cat-title">تحليل البيانات و قواعد البيانات</span>
+    <span class="cat-badge">11</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmlJDwGbIpoa4s8qOjirsfL" target="_blank">كورس قواعد بيانات الأعضاء</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk-9tUSWTcM23lgnoAlRmMZ" target="_blank">قواعد بيانات اوراكل</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflAus00vgdVEzLUBCx8ooH_" target="_blank">كورس قواعد البيانات و السي شارب - جميع قواعد البيانات</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflwIO8IiPxNkSSb-ezkNqDs" target="_blank">الخوارزميات و خرائط التدفق</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmOvX3-91zteoSP-b0VS44o" target="_blank">الخوارزميات و خرائط التدفق 2</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkDoNSoObO0s_OZn67DFAti" target="_blank">تحليل البيانات</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflO4GPp9vMtUgry-xAQKl7i" target="_blank">ماي سكول</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmNd2URuqVO5Itboj_LQyrx" target="_blank">لغة سكول</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflvUe-YfDpIqqnU70BopQ3q" target="_blank">مايكروسوفت سكول سيرفر</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmMYvE8mnEH4VT-4v21XV6p" target="_blank">شرح ملتيميديا داتا بيز IS502</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmg0C_6ON0IRFWrifni6CTq" target="_blank">كورس قواعد البيانات الشامل و البرنامج المتكامل</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات اساسيات لغات البرمجة">
+  <div class="cat-head">
+    <span class="cat-ic">📝</span>
+    <span class="cat-title">كورسات اساسيات لغات البرمجة</span>
+    <span class="cat-badge">15</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflflvzYY7B1d5CJjXpbIriU" target="_blank">جافا اساسيات من البداية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmb25mVAsCJy_Ehgu5rbbQx" target="_blank">جافا و التمهيد للبرمجة الكائنية التوجه OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnT2i7Ba4F2nrWb_ENXjyTs" target="_blank">جافا و البرمجة كائنية التوجه OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm8nQAoJF5u2aV43tMRAAmr" target="_blank">اساسيات سي شارب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6UP-PlUli03pokSc4af2S" target="_blank">سي شارب و البرمجة كائنية التوجه OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmm35tXSbxsFDouRJAPP9Y2" target="_blank">اساسيات بايثون</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmHvfmFZZ0XuzZYuoosG9kl" target="_blank">بايثون و البرمجة كائنية التوجه OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflKvIMpDSgFTJsR_IO1dH9i" target="_blank">اساسيات فيجوال بيسك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkJwYrBR5DJOs2F33R90H7g" target="_blank">فيجوال بيسك و البرمجة كائنية التوجه OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6KzfLziFl650MmThnQ0jT" target="_blank">اساسيات لغة رينج من البداية</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl5TA4nTIIVWsfDyVwIBP6y" target="_blank">اساسيات OOP في لغة رينج</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl5UHtM6DRFAVn3PBuJ7NGD" target="_blank">اساسيات لغة البرمجة كوتلن و الـ OOP</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkz_N9aNWXRByEJOudCxSRh" target="_blank">البداية مع سي بلس بلس</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflPoGDzHxFW5sDadboQ08Vd" target="_blank">كورس السي و سي بلس بلس</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl3ft6CfBTjopDFgWYXUJpa" target="_blank">برمجة - سلسلة تعليم الفيديو الواحد</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات الويب">
+  <div class="cat-head">
+    <span class="cat-ic">🌐</span>
+    <span class="cat-title">كورسات الويب</span>
+    <span class="cat-badge">30</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflHjdhHZ8amYWkgApTQskVY" target="_blank">Web 🌐 هام جدا لأي مطور ويب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflj9zMCRTa7OuMw3uH7nPjC" target="_blank">كورس الويب الجديد الحصري للأعضاء</a><a class="cl" href="https://youtu.be/saHJ4NjeZPY" target="_blank">ما معني Full Stack Developer</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn1cs2BupsdJ7dzCQ7wmHFk" target="_blank">تصميم و رفع موقع انترنت باستخدام رينج</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnYEkYsNi5XJLI57OWMKBjM" target="_blank">تصميم موقع ويب كامل باستخدام جانجو و بايثون</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflYXyXHNiG-hyyVaz7-9ujn" target="_blank">دبلومة الويب الكاملة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflNE0g4ycrEgoB4574YKG3U" target="_blank">دبلومة الويب Front End</a><a class="cl" href="https://youtu.be/Z26aSwKkdf4" target="_blank">HTML, CSS, JavaScript, J-Query, Bootstrap في فيديو واحد</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmpHW37aNxMFosXD_p1jQz0" target="_blank">شرح قديم في HTML</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnXKjZ9UcT5BVt9x19BlItX" target="_blank">اسرع كورس في HTML</a><a class="cl" href="https://youtu.be/KRiq7Eqfe-Q" target="_blank">شرح صخرة الاساس في HTML</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflO6xnz4jpmzzSuo5B63aJf" target="_blank">كورس لغة سي اس اس CSS للويب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkJzvWATr3oQ8mrVrTUqZ7K" target="_blank">شرح صخرة الاساس في CSS</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfneZzVSo84DuwnyP9ieYt8K" target="_blank">شرح صخرة الاساس في SVG</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmiYYwt29BG7N9zzsd-jLRQ" target="_blank">كورس جافا سكريبت</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkfITD_tTWR7S1ZLE54om9L" target="_blank">ورشة عمل جافا سكريبت</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmi8jwSbqiQuVfxeXIBk-bW" target="_blank">جميع ادوات صفحات الويب مع تقنية ASP .NET</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkYSpySS9Czt3Dxx2rsvqcN" target="_blank">تصميم و برمجة الة حاسبة للويب - افهم حقيقة اللغات HTML , CSS , JS</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfll3ObMFi02Ry7oRU3MJVRG" target="_blank">كورس j-Query</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmzBcYnuLNrmdLxYCDzJgQi" target="_blank">كورس Bootstrap بوتستراب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn3efr_n7Kku8Znu8sGDYPu" target="_blank">في فيديو واحد وموقع كامل Bootstrap بوتستراب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmPDQahhTDdd1DJ4PwQl3pC" target="_blank">كورس بي اتش بي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflA5jVQbAAHVizSxoeOAtgq" target="_blank">كورس جاسون</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflbtKBrCp5U2UdbeV1c7F-5" target="_blank">كورس انجولار</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnPUohWz2vPjm0obEjzZJD8" target="_blank">ويب - سلسلة تعليم الفيديو الواحد</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmYd8YFZtSmCzc3hcZXVua9" target="_blank">دروس AJAX</a><a class="cl" href="https://www.youtube.com/watch?v=ZC2MnsmRMGk&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=2" target="_blank">عرض البيانات في الويب وتعديلها في جريد بسهولة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn6kI3NyvzTDm-wdw9EX7D6" target="_blank">بناء موقع تجاري متكامل باستخدام السي شارب وتقنية ASP.NET - شرح تنفيذي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkoJK8bEZyNsBfmzApb0gH0" target="_blank">دروس كثيرة في عالم الويب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflkDPHlOLTKV1daEp4pvIgA" target="_blank">شرح عن لغة سي شارب وتقنية ASP.NET وموقع الويب</a>
+  </div>
+</div>
+<div class="cat-block" data-title="كورسات برامج الكمبيوتر">
+  <div class="cat-head">
+    <span class="cat-ic">💾</span>
+    <span class="cat-title">كورسات برامج الكمبيوتر</span>
+    <span class="cat-badge">22</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjNwfEqFNS9N34vBfHD59n" target="_blank">برمجة القرآن ۩</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfma-_07wzduGu4pTPDgw9G2" target="_blank">تطبيق بنك الأكواد Offline</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnKQjOoZc540z3fmGe-slLU" target="_blank">جافا - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmMhy8GltKHW5UJ_ZPnGJ0K" target="_blank">بايثون - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmE8gCtJQpIOGmBz3bc_Nrs" target="_blank">رينج - انشاء برنامج متكامل يعمل علي جميع الانظمة ويندوز و لينكس و ماك و اندرويد و ايفون و الويب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnUMvey6UAveK5msn8L_ulS" target="_blank">انشاء برامج بلغة جافا - امثلة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl2XxZwryDuPO5ZLkRhL-CS" target="_blank">ادوات جافا سوينج تعمل علي ويندوز و لينكس و ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl0vnBDg28R0DW9HBkyHvc-" target="_blank">عمل برنامج متكامل بالتقارير - سي شارب و اوراكل</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnbNoGB0NdoRdllq9fdo6uM" target="_blank">ادوات سي شارب تعمل علي ويندوز</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkdbHPdTBpcYZzPQtPUeR7I" target="_blank">عمل برنامج متكامل بالتقارير بفيجوال بيسك و اكسس</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfkkhf3ha77qccAWYMvgM7LR" target="_blank">اعداد تقارير مع كريستال ريبورت و فيجوال بيسك دوت نت و سكول سيرفر</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn7Pz7MnzABWryuHRP9ab7O" target="_blank">ادوات فيجوال بيسك تعمل علي ويندوز</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmE8gCtJQpIOGmBz3bc_Nrs" target="_blank">ادوات رينج Qt تعمل علي ويندوز و لينكس و ماك</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIflAkiMFHY-0Jc_XXnpLWQO0" target="_blank">عمل برنامج متكامل بالتقارير - فيجوال بيسك و اوراكل</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl7ToU9EDuRVYiki9C9wxnJ" target="_blank">انشاء متصفح ويب باستخدام لغة سي شارب</a><a class="cl" href="https://www.youtube.com/watch?v=NMXn8s-GQ7Q&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=7" target="_blank">انشاء برنامج سريع سي شارب و سكول سيرفر جزء اول</a><a class="cl" href="https://www.youtube.com/watch?v=ODTO1vSjJvw&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=8" target="_blank">انشاء برنامج سريع سي شارب و سكول سيرفر جزء ثاني</a><a class="cl" href="https://www.youtube.com/watch?v=nXjSpfwKhqA&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=14" target="_blank">انشاء برنامج سريع فيجوال بيسك و اكسس جزء اول</a><a class="cl" href="https://www.youtube.com/watch?v=T8ejqewbnNc&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=15" target="_blank">انشاء برنامج سريع فيجوال بيسك و اكسس جزء ثاني</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7" target="_blank">شرح عام فى البرمجة</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnK119pOw2oEDXc0AEpIfd5" target="_blank">انشاء برنامج الطعام</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfm2vgnbTfoxoUSlxoag0UHX" target="_blank">انشاء برنامج المبيعات</a>
+  </div>
+</div>
+<div class="cat-block" data-title="شرح عام في البرمجة">
+  <div class="cat-head">
+    <span class="cat-ic">📖</span>
+    <span class="cat-title">شرح عام في البرمجة</span>
+    <span class="cat-badge">7</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/watch?v=9UMtPbvFXGw&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=1" target="_blank">تغيير شكل البرنامج لاي برنامج</a><a class="cl" href="https://www.youtube.com/watch?v=9gIeG1HpGVw&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=5" target="_blank">توليد ارقام عشوائية بدون تكرار في سي شارب</a><a class="cl" href="https://www.youtube.com/watch?v=BXHDg_4AiAk&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=6" target="_blank">توليد ارقام عشوائية بدون تكرار في فيجوال بيسك</a><a class="cl" href="https://www.youtube.com/watch?v=xlObql2oCTA&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=3" target="_blank">انشاء شاشة بالكود مع سي شارب</a><a class="cl" href="https://www.youtube.com/watch?v=mIDIx-qQWYg&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=4" target="_blank">انشاء شاشة بالكود مع فيجوال بيسك</a><a class="cl" href="https://www.youtube.com/watch?v=pm7G9np2JAg&amp;list=PLHIfW1KZRIfl6aI0bGb0zWZyGHc2ctcW7&amp;index=11" target="_blank">انشاء برنامج بدون قاعدة بيانات معتمد على XML</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnDa6squg4OjDjYfx5YC8Zx" target="_blank">طرق تحويل ملف الجار الي ملف تنفيذي ويندوز</a>
+  </div>
+</div>
+<div class="cat-block" data-title="ادوات و برامج جاهزة لمساعدة المبرمجين و المطورين">
+  <div class="cat-head">
+    <span class="cat-ic">🛠️</span>
+    <span class="cat-title">ادوات و برامج جاهزة لمساعدة المبرمجين و المطورين</span>
+    <span class="cat-badge">8</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnjNwfEqFNS9N34vBfHD59n" target="_blank">برنامج القرآن مفتوح المصدر</a><a class="cl" href="https://www.youtube.com/watch?v=ZgS6L31GvXY&amp;index=4&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">نتيجة التاريخ الهجري مع الميلادي مفتوح المصدر</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnkb0hIry8E0LbA0flhaXTo" target="_blank">الاداة الساحرة Magic DB</a><a class="cl" href="https://www.youtube.com/watch?v=eqjcA3v7WGU&amp;index=2&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">برنامج رسم خرائط التدفق بالعربي</a><a class="cl" href="https://www.youtube.com/watch?v=H7gNz-e0oXQ&amp;index=1&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">برنامج رسم خرائط التدفق بالانجليزي</a><a class="cl" href="https://www.youtube.com/watch?v=xiCqYmb10FU&amp;index=6&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">برنامج برنت سكرين احترافي</a><a class="cl" href="https://www.youtube.com/watch?v=goWoeY2jGWc&amp;index=8&amp;list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">ادارة صلاحيات المستخدمين</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmCe0esfmzTZTQ_AfoLOH1M" target="_blank">برامج جاهزة</a>
+  </div>
+</div>
+<div class="cat-block" data-title="مناهج دراسية في مصر">
+  <div class="cat-head">
+    <span class="cat-ic">🏫</span>
+    <span class="cat-title">مناهج دراسية في مصر</span>
+    <span class="cat-badge">2</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmkYyJx1FJcSx1QOJnHanpQ" target="_blank">حاسب الى الصف الثانى الاعدادى الترم الاول</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfmM2mbNfA_4jTI3vyK4iCOE" target="_blank">حاسب الى الصف الثالث الاعدادى الترم الاول</a>
+  </div>
+</div>
+<div class="cat-block" data-title="برامج للبيع">
+  <div class="cat-head">
+    <span class="cat-ic">💰</span>
+    <span class="cat-title">برامج للبيع</span>
+    <span class="cat-badge">2</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfnd5v0u8hxwTKXebJK9QpqG" target="_blank">برنامج امتحان الطلاب</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfn502dDJdsvN_s_b4DTi-64" target="_blank">برامج للبيع</a>
+  </div>
+</div>
+<div class="cat-block" data-title="دروس قديمة">
+  <div class="cat-head">
+    <span class="cat-ic">📜</span>
+    <span class="cat-title">دروس قديمة</span>
+    <span class="cat-badge">3</span>
+    <span class="cat-arrow">▾</span>
+  </div>
+  <div class="cat-body open">
+    <a class="cl" href="https://www.youtube.com/watch?v=HsGdckRQi14&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=7" target="_blank">تنزيل وندوز اكس بي</a><a class="cl" href="https://www.youtube.com/playlist?list=PLHIfW1KZRIfk5L0DQbV8DyUwfoAhQyieg" target="_blank">دروس فيجوال بيسك 6 القديم</a><a class="cl" href="https://www.youtube.com/watch?v=zC6er7HNhek&amp;list=PLHIfW1KZRIfm_dFhGnawAlnOOE1aSwoSN&amp;index=11" target="_blank">عمل جهاز وهمي ببرنامج قديم</a>
+  </div>
+</div>
+</div>
+<div class="no-result" id="noResult">لا توجد نتائج لـ "<span id="searchTerm"></span>"</div>
 
 <div class="new-line"></div>
-<br>
 
 <script>
+/* ── toggle single cat ── */
+document.querySelectorAll('.cat-head').forEach(function(h){
+  h.addEventListener('click', function(){
+    h.parentElement.classList.toggle('collapsed');
+  });
+});
 
-    function copyTextToClipboard(text, button) {
-        const originalText = button.textContent; // حفظ النص الأصلي
+function toggleAll(open){
+  document.querySelectorAll('.cat-block').forEach(function(b){
+    b.classList.toggle('collapsed',!open);
+  });
+}
 
-        const showFeedback = () => {
-            button.textContent = "✅ تم النسخ!";
-            setTimeout(() => {
-            button.textContent = originalText; // استرجاع النص الأصلي
-            }, 2000);
-        };
-
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(showFeedback).catch(err => {
-            console.error("فشل النسخ:", err);
-            });
-        } else {
-            const textarea = document.createElement("textarea");
-            textarea.value = text;
-            textarea.style.position = "fixed";
-            textarea.style.top = "-9999px";
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-
-            try {
-            document.execCommand('copy');
-            showFeedback();
-            } catch (err) {
-            console.error("فشل النسخ:", err);
-            }
-
-            document.body.removeChild(textarea);
-        }
-    }
-
-
-
-    function copyAll(btn){
-        let txtToCopy = "";
-
-        const allElements = document.querySelectorAll('h2, h3');
-
-        let currentSectionTitle = "";
-
-        allElements.forEach(el => {
-        if (el.tagName === 'H2') {
-            // إذا بدأنا قسمًا جديدًا
-            if (currentSectionTitle !== "") {
-                txtToCopy += "\n===========\n";
-            }
-            currentSectionTitle = el.textContent.trim();
-            txtToCopy += "===========\n" + currentSectionTitle + "\n";
-            } else if (el.tagName === 'H3') {
-                const a = el.querySelector('a');
-                if (a) {
-                const linkText = a.textContent.trim();
-                const linkHref = a.href;
-                txtToCopy += linkText + " " + linkHref + "\n";
-                }
-            }
-
-        });
-
-        copyTextToClipboard(txtToCopy, btn);
-    }
-
-    // الحصول على جميع العناصر h3
-    const h3Elements = document.querySelectorAll('h3');
-
-    // عد العناصر a داخل كل عنصر h3
-    let count = 0;
-    h3Elements.forEach(h3 => {
-        count += h3.querySelectorAll('a').length;
+/* ── search ── */
+function doSearch(q){
+  q = q.trim().toLowerCase();
+  var blocks = document.querySelectorAll('.cat-block');
+  var anyVisible = false;
+  blocks.forEach(function(b){
+    var links = b.querySelectorAll('.cl');
+    var vis = 0;
+    links.forEach(function(a){
+      var match = !q || a.textContent.toLowerCase().includes(q);
+      a.classList.toggle('hidden',!match);
+      if(match) vis++;
     });
+    var show = vis>0 || !q;
+    b.style.display = show?'':'none';
+    if(show) anyVisible=true;
+    if(q) b.classList.remove('collapsed');
+  });
+  document.getElementById('noResult').style.display = anyVisible?'none':'block';
+  document.getElementById('searchTerm').textContent = q;
+  document.getElementById('totalCount').textContent =
+    q ? document.querySelectorAll('.cl:not(.hidden)').length : document.querySelectorAll('.cl').length;
+}
 
-    //console.log('عدد العناصر a داخل h3:', count);
-    window.lblCount.innerHTML = " الآن " + count + " رابط او كورس";
+/* ── filter by icon ── */
+function filterCat(ic, btn){
+  document.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('searchInput').value='';
+  document.querySelectorAll('.cl').forEach(function(a){a.classList.remove('hidden');});
+  document.querySelectorAll('.cat-block').forEach(function(b){
+    if(ic==='all') { b.style.display=''; }
+    else {
+      var show = b.querySelector('.cat-ic').textContent.trim()===ic;
+      b.style.display = show?'':'none';
+    }
+  });
+  var visLinks = document.querySelectorAll('.cat-block:not([style*="none"]) .cl').length;
+  document.getElementById('totalCount').textContent = visLinks || document.querySelectorAll('.cl').length;
+}
 
-    
 
+/* ── عدادات ديناميكية ── */
+function updateDynamicCounters(){
+  var total = 0;
+  document.querySelectorAll('.cat-block').forEach(function(b){
+    var links = b.querySelectorAll('.cl');
+    var badge = b.querySelector('.cat-badge');
+    if(badge) badge.textContent = links.length;
+    total += links.length;
+  });
+  var tc = document.getElementById('totalCount');
+  if(tc) tc.textContent = total;
+  // Update search placeholder too
+  var si = document.getElementById('searchInput');
+  if(si) si.placeholder = '🔍  ابحث في أكثر من ' + total + ' كورس...';
+  // Update hero paragraph
+  var hp = document.querySelector('.all-hero p');
+  if(hp) hp.innerHTML = 'إجمالي <span class="counter" id="totalCount">' + total + '</span> كورس ورابط';
+}
+document.addEventListener('DOMContentLoaded', updateDynamicCounters);
+
+/* ── copy all ── */
+function copyAll(btn){
+  var txt='';
+  document.querySelectorAll('.cat-block').forEach(function(b){
+    txt+='\n=== '+b.querySelector('.cat-title').textContent+' ===\n';
+    b.querySelectorAll('.cl').forEach(function(a){
+      txt+=a.textContent.trim()+' → '+a.href+'\n';
+    });
+  });
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(function(){
+      var o=btn.textContent; btn.textContent='✅ تم النسخ!';
+      setTimeout(function(){btn.textContent=o;},2000);
+    });
+  }
+}
 </script>
-
 </body>
 </html>
